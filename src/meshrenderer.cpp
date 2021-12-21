@@ -88,7 +88,7 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
   // gather attributes for current mesh
   QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
   QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
-  QVector<uint>& polyIndices = currentMesh.getPolyIndices();
+  QVector<int>& polyIndices = currentMesh.getPolyIndices();
 
   gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
   gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * vertexCoords.size(),
@@ -103,7 +103,7 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
   qDebug() << " → Updated meshNormalsBO";
 
   gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshIndexBO);
-  gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * polyIndices.size(),
+  gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * polyIndices.size(),
                    polyIndices.data(), GL_DYNAMIC_DRAW);
 
   qDebug() << " → Updated meshIndexBO";

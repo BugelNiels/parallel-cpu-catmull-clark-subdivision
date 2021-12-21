@@ -37,3 +37,9 @@ FORMS    += mainwindow.ui
 
 RESOURCES += \
     resources.qrc
+
+QMAKE_CXXFLAGS+= -fopenmp -lpthread
+QMAKE_LFLAGS +=  -fopenmp -lpthread
+
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3

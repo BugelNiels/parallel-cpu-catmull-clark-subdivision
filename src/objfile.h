@@ -17,9 +17,9 @@ class OBJFile {
   QVector<QVector3D> vertexCoords;
   QVector<QVector2D> textureCoords;
   QVector<QVector3D> vertexNormals;
-  QVector<QVector<uint>> faceCoordInd;
-  QVector<QVector<uint>> faceTexInd;
-  QVector<QVector<uint>> faceNormalInd;
+  QVector<QVector<int>> faceCoordInd;
+  QVector<QVector<int>> faceTexInd;
+  QVector<QVector<int>> faceNormalInd;
 
   bool isQuad;
 };

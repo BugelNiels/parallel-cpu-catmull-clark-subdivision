@@ -15,45 +15,45 @@ class Mesh {
  public:
   Mesh();
   // TODO: refactor
-  Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins, QVector<uint> nexts,
-       QVector<uint> prevs, QVector<uint> verts, QVector<uint> edges,
-       QVector<uint> faces);
+  Mesh(QVector<QVector3D> vertCoords, QVector<int> twins, QVector<int> nexts,
+       QVector<int> prevs, QVector<int> verts, QVector<int> edges,
+       QVector<int> faces);
   virtual ~Mesh();
 
   inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
   inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
-  inline QVector<uint>& getPolyIndices() { return polyIndices; }
+  inline QVector<int>& getPolyIndices() { return polyIndices; }
 
   void extractAttributes();
 
   void subdivideCatmullClark(QuadMesh& mesh);
 
  protected:
-  QVector<uint> twins;
-  QVector<uint> nexts;
-  QVector<uint> prevs;
-  QVector<uint> verts;
-  QVector<uint> edges;
-  QVector<uint> faces;
+  QVector<int> twins;
+  QVector<int> nexts;
+  QVector<int> prevs;
+  QVector<int> verts;
+  QVector<int> edges;
+  QVector<int> faces;
 
-  uint numHalfEdges;
+  int numHalfEdges;
 
   QVector<QVector3D> vertexCoords;
   QVector<QVector3D> vertexNormals;
-  QVector<uint> polyIndices;
+  QVector<int> polyIndices;
 
-  virtual uint next(uint h);
-  virtual uint prev(uint h);
-  virtual uint face(uint h);
-  uint twin(uint h);
-  uint vert(uint h);
-  uint edge(uint h);
+  virtual int next(int h);
+  virtual int prev(int h);
+  virtual int face(int h);
+  int twin(int h);
+  int vert(int h);
+  int edge(int h);
 
-  virtual uint cycleLength(uint h);
-  uint valence(uint h);
+  virtual int cycleLength(int h);
+  int valence(int h);
 
-  uint getNumberOfEdges();
-  virtual uint getNumberOfFaces();
+  int getNumberOfEdges();
+  virtual int getNumberOfFaces();
 };
 
 #endif  // MESH_H

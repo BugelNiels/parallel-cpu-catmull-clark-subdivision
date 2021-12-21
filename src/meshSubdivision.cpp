@@ -1,9 +1,10 @@
 #include "mesh.h"
+#include "omp.h"
 #include "quadmesh.h"
 
-uint Mesh::cycleLength(uint h) {
-  uint n = 1;
-  uint hp = next(h);
+int Mesh::cycleLength(int h) {
+  int n = 1;
+  int hp = next(h);
   while (hp != h) {
     hp = next(hp);
     n++;
@@ -11,28 +12,30 @@ uint Mesh::cycleLength(uint h) {
   return n;
 }
 
-uint Mesh::getNumberOfEdges() { return numHalfEdges / 2; }
-uint Mesh::getNumberOfFaces() { return face(faces.size() - 1); }
+int Mesh::getNumberOfEdges() { return numHalfEdges / 2; }
+int Mesh::getNumberOfFaces() { return face(faces.size() - 1); }
 
 void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
   qDebug() << "subdividing regular";
   // Allocate Buffers
-  uint newSize = numHalfEdges * 4;
+  int newSize = numHalfEdges * 4;
   mesh.numHalfEdges = newSize;
   mesh.twins.resize(newSize);
   mesh.edges.resize(newSize);
   mesh.verts.resize(newSize);
   mesh.vertexCoords.resize(newSize);
 
-  uint vd = verts.size();
-  uint fd = getNumberOfFaces();
+  int vd = verts.size();
+  int fd = getNumberOfFaces();
   // TODO does not work for boundaries
-  uint ed = getNumberOfEdges();
+  int ed = getNumberOfEdges();
 
   // Half Edge Refinement Rules
-  for (uint h = 0; h < numHalfEdges; ++h) {
-    uint hp = prev(h);
+#pragma omp parallel for
+  for (int h = 0; h < numHalfEdges; ++h) {
+    int hp = prev(h);
 
+    // For boundaries
     mesh.twins[4 * h] = 4 * next(twin(h)) + 3;
     mesh.twins[4 * h + 1] = 4 * next(h) + 2;
     mesh.twins[4 * h + 2] = 4 * prev(h) + 1;
@@ -49,30 +52,39 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
     mesh.edges[4 * h + 3] = hp > twin(hp) ? 2 * edge(hp) + 1 : 2 * edge(hp);
   }
 
-  // Face Points
-  for (uint h = 0; h < numHalfEdges; ++h) {
+// Face Points
+#pragma omp parallel for
+  for (int h = 0; h < numHalfEdges; ++h) {
     float m = cycleLength(h);
-    uint v = vert(h);
-    uint i = vd + face(h);
-    mesh.vertexCoords[i] += vertexCoords[v] / m;
+    int v = vert(h);
+    int i = vd + face(h);
+    QVector3D c = vertexCoords[v] / m;
+#pragma omp critical
+    mesh.vertexCoords[i] += c;
   }
 
-  // Edge Points
-  for (uint h = 0; h < numHalfEdges; ++h) {
-    uint v = vert(h);
-    uint i = vd + face(h);
-    uint j = vd + fd + edge(h);
-    mesh.vertexCoords[j] += (vertexCoords[v] + mesh.vertexCoords[i]) / 4.0f;
+// Edge Points
+#pragma omp parallel for
+  for (int h = 0; h < numHalfEdges; ++h) {
+    int v = vert(h);
+    int i = vd + face(h);
+    int j = vd + fd + edge(h);
+    QVector3D c = (vertexCoords[v] + mesh.vertexCoords[i]) / 4.0f;
+#pragma omp critical
+    mesh.vertexCoords[j] += c;
   }
 
-  // Vertex Points
-  for (uint h = 0; h < numHalfEdges; ++h) {
+// Vertex Points
+#pragma omp parallel for
+  for (int h = 0; h < numHalfEdges; ++h) {
     float n = valence(h);
-    uint v = vert(h);
-    uint i = vd + face(h);
-    uint j = vd + fd + edge(h);
-    mesh.vertexCoords[v] += (4 * mesh.vertexCoords[j] - mesh.vertexCoords[i] +
-                             (n - 3) * vertexCoords[v]) /
-                            (n * n);
+    int v = vert(h);
+    int i = vd + face(h);
+    int j = vd + fd + edge(h);
+    QVector3D c = (4 * mesh.vertexCoords[j] - mesh.vertexCoords[i] +
+                   (n - 3) * vertexCoords[v]) /
+                  (n * n);
+#pragma omp critical
+    mesh.vertexCoords[v] += c;
   }
 }

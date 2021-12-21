@@ -10,11 +10,11 @@ class QuadMesh : public Mesh {
   using Mesh::Mesh;
 
  protected:
-  uint next(uint h) override;
-  uint prev(uint h) override;
-  uint face(uint h) override;
-  uint cycleLength(uint h) override;
-  uint getNumberOfFaces() override;
+  int next(int h) override;
+  int prev(int h) override;
+  int face(int h) override;
+  int cycleLength(int h) override;
+  int getNumberOfFaces() override;
 };
 
 #endif  // QUADMESH_H

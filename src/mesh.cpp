@@ -7,9 +7,9 @@
  */
 Mesh::Mesh() {}
 
-Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
-           QVector<uint> nexts, QVector<uint> prevs, QVector<uint> verts,
-           QVector<uint> edges, QVector<uint> faces) {
+Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<int> twins,
+           QVector<int> nexts, QVector<int> prevs, QVector<int> verts,
+           QVector<int> edges, QVector<int> faces) {
   vertexCoords = vertCoords;
   this->twins = twins;
   this->nexts = nexts;
@@ -25,21 +25,26 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
  */
 Mesh::~Mesh() { qDebug() << "Destructed"; }
 
-uint Mesh::twin(uint h) { return twins[h]; }
+int Mesh::twin(int h) { return twins[h]; }
 
-uint Mesh::vert(uint h) { return verts[h]; }
+int Mesh::vert(int h) { return verts[h]; }
 
-uint Mesh::edge(uint h) { return edges[h]; }
+int Mesh::edge(int h) { return edges[h]; }
 
-uint Mesh::next(uint h) { return nexts[h]; }
+int Mesh::next(int h) {
+  if (h < 0) {
+    return -1;
+  }
+  return nexts[h];
+}
 
-uint Mesh::prev(uint h) { return prevs[h]; }
+int Mesh::prev(int h) { return prevs[h]; }
 
-uint Mesh::face(uint h) { return faces[h]; }
+int Mesh::face(int h) { return faces[h]; }
 
-uint Mesh::valence(uint h) {
-  uint n = 1;
-  uint hp = next(twin(h));
+int Mesh::valence(int h) {
+  int n = 1;
+  int hp = next(twin(h));
   while (hp != h) {
     hp = next(twin(hp));
     n++;
@@ -63,7 +68,7 @@ void Mesh::extractAttributes() {
   // calculate vector of face normals
   QVector<QVector3D> faceNormals;
   int faceIdx = -1;
-  for (uint h = 0; h < numHalfEdges; ++h) {
+  for (int h = 0; h < numHalfEdges; ++h) {
     if (face(h) != faceIdx) {
       faceIdx = face(h);
       faceNormals.append({0, 0, 0});
@@ -87,7 +92,7 @@ void Mesh::extractAttributes() {
   vertexNormals.fill({0, 0, 0}, verts.size());
 
   // normal computation
-  for (uint h = 0; h < numHalfEdges; ++h) {
+  for (int h = 0; h < numHalfEdges; ++h) {
     QVector3D pPrev = vertexCoords[vert(prev(h))];
     QVector3D pCur = vertexCoords[vert(h)];
     QVector3D pNext = vertexCoords[vert(next(h))];

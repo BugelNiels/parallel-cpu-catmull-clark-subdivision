@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 
+#include <QDebug>
+#include <QElapsedTimer>
+
 #include "meshinitializer.h"
 #include "quadmesh.h"
 #include "ui_mainwindow.h"
@@ -59,14 +62,25 @@ void MainWindow::subdivide() {
   }
   for (unsigned short k = meshes.size(); k < meshIndex + 1; k++) {
     qDebug() << "subdividing new mesh";
-    QuadMesh* newMesh = new QuadMesh();
-    meshes[k - 1]->subdivideCatmullClark(*newMesh);
-    meshes.append(newMesh);
+    singleSubdivisionStep(k);
   }
   qDebug() << "done";
   ui->MainDisplay->settings.uniformUpdateRequired = true;
   updateBuffers();
   ui->MainDisplay->update();
+}
+
+void MainWindow::singleSubdivisionStep(int k) {
+  QElapsedTimer timer;
+  timer.start();
+
+  QuadMesh* newMesh = new QuadMesh();
+  meshes[k - 1]->subdivideCatmullClark(*newMesh);
+  meshes.append(newMesh);
+
+  /* Display info to user */
+  long long time = timer.nsecsElapsed();
+  qDebug() << "Subdivision time at " << k << time / 1000000.0 << "milliseconds";
 }
 
 void MainWindow::updateBuffers() {

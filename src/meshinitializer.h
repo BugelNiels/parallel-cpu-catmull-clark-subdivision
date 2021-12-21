@@ -15,18 +15,18 @@ class MeshInitializer {
  private:
   OBJFile* loadedObj;
 
-  QList<QPair<uint, uint>> edgeList;
+  QList<QPair<int, int>> edgeList;
 
-  uint numHalfEdges;
-  QVector<uint> twins;
-  QVector<uint> nexts;
-  QVector<uint> prevs;
-  QVector<uint> verts;
-  QVector<uint> edges;
-  QVector<uint> faces;
+  int numHalfEdges;
+  QVector<int> twins;
+  QVector<int> nexts;
+  QVector<int> prevs;
+  QVector<int> verts;
+  QVector<int> edges;
+  QVector<int> faces;
 
-  void addHalfEdge(uint h, uint faceIdx, QVector<uint> faceIndices, uint i);
-  void setEdgeAndTwins(uint h0, uint vertIdx2);
+  void addHalfEdge(int h, int faceIdx, QVector<int> faceIndices, int i);
+  void setEdgeAndTwins(int h0, int vertIdx2);
 };
 
 #endif  // MESHINITIALIZER_H

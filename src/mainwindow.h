@@ -40,6 +40,7 @@ class MainWindow : public QMainWindow {
 
  private:
   void subdivide();
+  void singleSubdivisionStep(int k);
   void updateBuffers();
   Ui::MainWindow *ui;
   int meshIndex;

@@ -54,9 +54,9 @@ OBJFile::OBJFile(QString fileName) {
       } else if (values[0] == "f") {
         // qDebug() << "Face";
 
-        QVector<uint> faceCoordsIndices;
-        QVector<uint> faceTexIndices;
-        QVector<uint> faceNormalIndices;
+        QVector<int> faceCoordsIndices;
+        QVector<int> faceTexIndices;
+        QVector<int> faceNormalIndices;
         for (k = 1; k < values.size(); k++) {
           indices = values[k].split("/");
 
