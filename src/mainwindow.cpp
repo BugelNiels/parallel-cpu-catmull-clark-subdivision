@@ -24,13 +24,11 @@ void MainWindow::importOBJ(QString filename) {
   qDebug() << filename;
   OBJFile newModel = OBJFile(filename);
   MeshInitializer initializer(&newModel);
-  Mesh* baseMesh = initializer.constructHalfEdgeMesh();
+  baseMesh = initializer.constructHalfEdgeMesh();
+  currentMesh = baseMesh;
 
-  meshes.clear();
-  meshes.reserve(10);
-  meshes.append(baseMesh);
+  subdivisionLevel = 0;
 
-  meshIndex = 0;
   updateBuffers();
   ui->MainDisplay->settings.modelLoaded = true;
   ui->generalGroupBox->setEnabled(true);
@@ -43,7 +41,7 @@ void MainWindow::on_ImportOBJ_clicked() {
 }
 
 void MainWindow::on_SubdivSteps_valueChanged(int value) {
-  meshIndex = value;
+  subdivisionLevel = value;
   if (ui->MainDisplay->settings.requireApply) {
     return;
   }
@@ -56,15 +54,17 @@ void MainWindow::on_wireframeCheckBox_toggled(bool checked) {
 }
 
 void MainWindow::subdivide() {
-  if (meshes.size() == 0) {
-    qDebug() << "No meshes to subdivide";
-    return;
-  }
-  for (unsigned short k = meshes.size(); k < meshIndex + 1; k++) {
-    qDebug() << "subdividing new mesh";
+  currentMesh = baseMesh;
+
+  QElapsedTimer timer;
+  timer.start();
+  for (unsigned short k = 0; k < subdivisionLevel; k++) {
     singleSubdivisionStep(k);
   }
-  qDebug() << "done";
+  /* Display info to user */
+  long long time = timer.nsecsElapsed();
+  qDebug() << "Total time elapsed for " << subdivisionLevel << ":"
+           << time / 1000000.0 << "milliseconds";
   ui->MainDisplay->settings.uniformUpdateRequired = true;
   updateBuffers();
   ui->MainDisplay->update();
@@ -75,8 +75,8 @@ void MainWindow::singleSubdivisionStep(int k) {
   timer.start();
 
   QuadMesh* newMesh = new QuadMesh();
-  meshes[k - 1]->subdivideCatmullClark(*newMesh);
-  meshes.append(newMesh);
+  currentMesh->subdivideCatmullClark(*newMesh);
+  currentMesh = newMesh;
 
   /* Display info to user */
   long long time = timer.nsecsElapsed();
@@ -84,7 +84,7 @@ void MainWindow::singleSubdivisionStep(int k) {
 }
 
 void MainWindow::updateBuffers() {
-  ui->MainDisplay->updateBuffers(*meshes[meshIndex]);
+  ui->MainDisplay->updateBuffers(*currentMesh);
 }
 
 void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }

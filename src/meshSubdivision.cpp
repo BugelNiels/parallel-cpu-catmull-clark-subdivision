@@ -16,7 +16,6 @@ int Mesh::getNumberOfEdges() { return numHalfEdges / 2; }
 int Mesh::getNumberOfFaces() { return face(faces.size() - 1); }
 
 void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
-  qDebug() << "subdividing regular";
   // Allocate Buffers
   int newSize = numHalfEdges * 4;
   mesh.numHalfEdges = newSize;

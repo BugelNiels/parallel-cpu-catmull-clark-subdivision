@@ -18,10 +18,11 @@ class MainWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit MainWindow(QWidget *parent = 0);
+  explicit MainWindow(QWidget* parent = 0);
   ~MainWindow();
 
-  QVector<Mesh *> meshes;
+  Mesh* baseMesh;
+  Mesh* currentMesh;
 
   void importOBJ(QString filename);
 
@@ -42,8 +43,8 @@ class MainWindow : public QMainWindow {
   void subdivide();
   void singleSubdivisionStep(int k);
   void updateBuffers();
-  Ui::MainWindow *ui;
-  int meshIndex;
+  Ui::MainWindow* ui;
+  int subdivisionLevel;
 };
 
 #endif  // MAINWINDOW_H
