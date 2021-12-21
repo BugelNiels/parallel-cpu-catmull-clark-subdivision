@@ -1,6 +1,7 @@
 #ifndef MESHINITIALIZER_H
 #define MESHINITIALIZER_H
 
+#include <QDebug>
 #include <QVector>
 
 #include "mesh.h"
@@ -9,7 +10,7 @@
 class MeshInitializer {
  public:
   MeshInitializer(OBJFile* loadedOBJFile);
-  Mesh constructHalfEdgeMesh();
+  Mesh* constructHalfEdgeMesh();
 
  private:
   OBJFile* loadedObj;

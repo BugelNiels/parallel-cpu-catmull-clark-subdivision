@@ -1,9 +1,10 @@
 #include "mainwindow.h"
 
 #include "meshinitializer.h"
+#include "quadmesh.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   qDebug() << "✓✓ MainWindow constructor";
   ui->setupUi(this);
@@ -20,7 +21,7 @@ void MainWindow::importOBJ(QString filename) {
   qDebug() << filename;
   OBJFile newModel = OBJFile(filename);
   MeshInitializer initializer(&newModel);
-  Mesh baseMesh = initializer.constructHalfEdgeMesh();
+  Mesh* baseMesh = initializer.constructHalfEdgeMesh();
 
   meshes.clear();
   meshes.reserve(10);
@@ -53,19 +54,23 @@ void MainWindow::on_wireframeCheckBox_toggled(bool checked) {
 
 void MainWindow::subdivide() {
   if (meshes.size() == 0) {
+    qDebug() << "No meshes to subdivide";
     return;
   }
   for (unsigned short k = meshes.size(); k < meshIndex + 1; k++) {
-    meshes.append(Mesh());
-    meshes[k - 1].subdivideCatmullClark(meshes[k]);
+    qDebug() << "subdividing new mesh";
+    QuadMesh* newMesh = new QuadMesh();
+    meshes[k - 1]->subdivideCatmullClark(*newMesh);
+    meshes.append(newMesh);
   }
+  qDebug() << "done";
   ui->MainDisplay->settings.uniformUpdateRequired = true;
   updateBuffers();
   ui->MainDisplay->update();
 }
 
 void MainWindow::updateBuffers() {
-  ui->MainDisplay->updateBuffers(meshes[meshIndex]);
+  ui->MainDisplay->updateBuffers(*meshes[meshIndex]);
 }
 
 void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }

@@ -14,12 +14,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
+  meshSubdivision.cpp \
   meshinitializer.cpp \
     meshrenderer.cpp \
     objfile.cpp \
     mesh.cpp \
-    meshtools.cpp \
     mainview.cpp \
+  quadmesh.cpp \
     settings.cpp
 
 HEADERS  += mainwindow.h \
@@ -27,6 +28,7 @@ HEADERS  += mainwindow.h \
     meshinitializer.h \
     meshrenderer.h \
     objfile.h \
+    quadmesh.h \
     renderer.h \
     settings.h \
     mainview.h

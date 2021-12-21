@@ -2,6 +2,8 @@
 
 #include <QSet>
 
+#include "quadmesh.h"
+
 MeshInitializer::MeshInitializer(OBJFile* loadedOBJFile) {
   loadedObj = loadedOBJFile;
 }
@@ -14,7 +16,7 @@ QPair<uint, uint> createUndirectedEdge(uint h1, uint h2) {
   return QPair<uint, uint>(h1, h2);
 }
 
-Mesh MeshInitializer::constructHalfEdgeMesh() {
+Mesh* MeshInitializer::constructHalfEdgeMesh() {
   // half edge index
   uint h = 0;
   // loop over every face
@@ -29,8 +31,13 @@ Mesh MeshInitializer::constructHalfEdgeMesh() {
   }
   numHalfEdges = h;
 
-  return Mesh(loadedObj->vertexCoords, twins, nexts, prevs, verts, edges, faces,
-              loadedObj->isQuad);
+  if (loadedObj->isQuad) {
+    qDebug() << "Creating a quad mesh";
+    return new QuadMesh(loadedObj->vertexCoords, twins, nexts, prevs, verts,
+                        edges, faces);
+  }
+  return new Mesh(loadedObj->vertexCoords, twins, nexts, prevs, verts, edges,
+                  faces);
 }
 
 void MeshInitializer::addHalfEdge(uint h, uint faceIdx,

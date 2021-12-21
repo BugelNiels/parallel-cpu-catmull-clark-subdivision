@@ -21,8 +21,8 @@ class MainWindow : public QMainWindow {
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
-  QVector<Mesh> meshes;
-  QVector<Mesh> limitMeshes;
+  QVector<Mesh *> meshes;
+
   void importOBJ(QString filename);
 
  private slots:

@@ -1,14 +1,5 @@
 #include "mesh.h"
-
-uint Mesh::valence(uint h) {
-  uint n = 1;
-  uint hp = next(twin(h));
-  while (hp != h) {
-    hp = next(twin(hp));
-    n++;
-  }
-  return n;
-}
+#include "quadmesh.h"
 
 uint Mesh::cycleLength(uint h) {
   uint n = 1;
@@ -20,7 +11,11 @@ uint Mesh::cycleLength(uint h) {
   return n;
 }
 
-void Mesh::subdivideCatmullClark(Mesh& mesh) {
+uint Mesh::getNumberOfEdges() { return numHalfEdges / 2; }
+uint Mesh::getNumberOfFaces() { return face(faces.size() - 1); }
+
+void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
+  qDebug() << "subdividing regular";
   // Allocate Buffers
   uint newSize = numHalfEdges * 4;
   mesh.numHalfEdges = newSize;
@@ -30,9 +25,9 @@ void Mesh::subdivideCatmullClark(Mesh& mesh) {
   mesh.vertexCoords.resize(newSize);
 
   uint vd = verts.size();
-  uint fd = isQuadMesh ? numHalfEdges / 4 : face(faces.size() - 1);
+  uint fd = getNumberOfFaces();
   // TODO does not work for boundaries
-  uint ed = numHalfEdges / 2;
+  uint ed = getNumberOfEdges();
 
   // Half Edge Refinement Rules
   for (uint h = 0; h < numHalfEdges; ++h) {
@@ -80,6 +75,4 @@ void Mesh::subdivideCatmullClark(Mesh& mesh) {
                              (n - 3) * vertexCoords[v]) /
                             (n * n);
   }
-
-  mesh.isQuadMesh = true;
 }

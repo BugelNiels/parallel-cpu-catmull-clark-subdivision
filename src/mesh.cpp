@@ -9,7 +9,7 @@ Mesh::Mesh() {}
 
 Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
            QVector<uint> nexts, QVector<uint> prevs, QVector<uint> verts,
-           QVector<uint> edges, QVector<uint> faces, bool isQuad) {
+           QVector<uint> edges, QVector<uint> faces) {
   vertexCoords = vertCoords;
   this->twins = twins;
   this->nexts = nexts;
@@ -17,14 +17,13 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
   this->verts = verts;
   this->edges = edges;
   this->faces = faces;
-  isQuadMesh = isQuad;
   numHalfEdges = verts.size();
 }
 
 /**
  * @brief Mesh::~Mesh Destructor
  */
-Mesh::~Mesh() {}
+Mesh::~Mesh() { qDebug() << "Destructed"; }
 
 uint Mesh::twin(uint h) { return twins[h]; }
 
@@ -32,25 +31,20 @@ uint Mesh::vert(uint h) { return verts[h]; }
 
 uint Mesh::edge(uint h) { return edges[h]; }
 
-uint Mesh::next(uint h) {
-  if (isQuadMesh) {
-    return h % 4 == 3 ? h - 3 : h + 1;
-  }
-  return nexts[h];
-}
+uint Mesh::next(uint h) { return nexts[h]; }
 
-uint Mesh::prev(uint h) {
-  if (isQuadMesh) {
-    return h % 4 == 0 ? h + 3 : h - 1;
-  }
-  return prevs[h];
-}
+uint Mesh::prev(uint h) { return prevs[h]; }
 
-uint Mesh::face(uint h) {
-  if (isQuadMesh) {
-    return h / 4;
+uint Mesh::face(uint h) { return faces[h]; }
+
+uint Mesh::valence(uint h) {
+  uint n = 1;
+  uint hp = next(twin(h));
+  while (hp != h) {
+    hp = next(twin(hp));
+    n++;
   }
-  return faces[h];
+  return n;
 }
 
 void Mesh::extractAttributes() {
