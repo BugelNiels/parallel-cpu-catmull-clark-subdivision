@@ -11,7 +11,6 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
            QVector<uint> nexts, QVector<uint> prevs, QVector<uint> verts,
            QVector<uint> edges, QVector<uint> faces, bool isQuad) {
   vertexCoords = vertCoords;
-
   this->twins = twins;
   this->nexts = nexts;
   this->prevs = prevs;
@@ -19,6 +18,7 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
   this->edges = edges;
   this->faces = faces;
   isQuadMesh = isQuad;
+  numHalfEdges = verts.size();
 }
 
 /**
@@ -26,30 +26,57 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins,
  */
 Mesh::~Mesh() {}
 
+uint Mesh::twin(uint h) { return twins[h]; }
+
+uint Mesh::vert(uint h) { return verts[h]; }
+
+uint Mesh::edge(uint h) { return edges[h]; }
+
+uint Mesh::next(uint h) {
+  if (isQuadMesh) {
+    return h % 4 == 3 ? h - 3 : h + 1;
+  }
+  return nexts[h];
+}
+
+uint Mesh::prev(uint h) {
+  if (isQuadMesh) {
+    return h % 4 == 0 ? h + 3 : h - 1;
+  }
+  return prevs[h];
+}
+
+uint Mesh::face(uint h) {
+  if (isQuadMesh) {
+    return h / 4;
+  }
+  return faces[h];
+}
+
 void Mesh::extractAttributes() {
   polyIndices.clear();
   // TODO: reserve at some point
 
   // half edges that belong to a face are stored contiguously
-  for (int k = 0; k < verts.size(); ++k) {
-    if (k > 0 && faces[k] != faces[k - 1]) {
+  for (int h = 0; h < numHalfEdges; ++h) {
+    if (h > 0 && face(h) != face(h - 1)) {
       polyIndices.append(INT_MAX);
     }
-    polyIndices.append(verts[k]);
+    polyIndices.append(vert(h));
   }
   polyIndices.append(INT_MAX);
 
   // calculate vector of face normals
   QVector<QVector3D> faceNormals;
   int faceIdx = -1;
-  for (uint h = 0; h < verts.size(); ++h) {
-    if (faces[h] != faceIdx) {
-      faceIdx = faces[h];
+  for (uint h = 0; h < numHalfEdges; ++h) {
+    if (face(h) != faceIdx) {
+      faceIdx = face(h);
       faceNormals.append({0, 0, 0});
     }
-    QVector3D pPrev = vertexCoords[verts[prevs[h]]];
-    QVector3D pCur = vertexCoords[verts[h]];
-    QVector3D pNext = vertexCoords[verts[nexts[h]]];
+    QVector3D pPrev = vertexCoords[vert(prev(h))];
+    QVector3D pCur = vertexCoords[vert(h)];
+    QVector3D pNext = vertexCoords[vert(next(h))];
 
     QVector3D edgeA = (pPrev - pCur).normalized();
     QVector3D edgeB = (pNext - pCur).normalized();
@@ -66,16 +93,16 @@ void Mesh::extractAttributes() {
   vertexNormals.fill({0, 0, 0}, verts.size());
 
   // normal computation
-  for (uint h = 0; h < verts.size(); ++h) {
-    QVector3D pPrev = vertexCoords[verts[prevs[h]]];
-    QVector3D pCur = vertexCoords[verts[h]];
-    QVector3D pNext = vertexCoords[verts[nexts[h]]];
+  for (uint h = 0; h < numHalfEdges; ++h) {
+    QVector3D pPrev = vertexCoords[vert(prev(h))];
+    QVector3D pCur = vertexCoords[vert(h)];
+    QVector3D pNext = vertexCoords[vert(next(h))];
 
     QVector3D edgeA = (pPrev - pCur).normalized();
     QVector3D edgeB = (pNext - pCur).normalized();
     // calculate angle between edges A and B
     float faceAngle = acos(fmax(-1.0f, QVector3D::dotProduct(edgeA, edgeB)));
 
-    vertexNormals[verts[h]] += faceAngle * faceNormals[faces[h]];
+    vertexNormals[vert(h)] += faceAngle * faceNormals[face(h)];
   }
 }

@@ -33,10 +33,21 @@ class Mesh {
   QVector<uint> faces;
 
   bool isQuadMesh;
+  uint numHalfEdges;
 
   QVector<QVector3D> vertexCoords;
   QVector<QVector3D> vertexNormals;
   QVector<uint> polyIndices;
+
+  uint next(uint h);
+  uint prev(uint h);
+  uint face(uint h);
+  uint twin(uint h);
+  uint vert(uint h);
+  uint edge(uint h);
+
+  uint cycleLength(uint h);
+  uint valence(uint h);
 };
 
 #endif  // MESH_H
