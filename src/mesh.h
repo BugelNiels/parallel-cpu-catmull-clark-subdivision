@@ -11,24 +11,32 @@
 class Mesh {
  public:
   Mesh();
-  Mesh(OBJFile* loadedOBJFile);
+  // TODO: refactor
+  Mesh(QVector<QVector3D> vertCoords, QVector<uint> twins, QVector<uint> nexts,
+       QVector<uint> prevs, QVector<uint> verts, QVector<uint> edges,
+       QVector<uint> faces, bool isQuad);
   ~Mesh();
 
   inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
   inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
-  inline QVector<unsigned int>& getPolyIndices() { return polyIndices; }
-  inline QVector<unsigned int>& getQuadIndices() { return quadIndices; }
+  inline QVector<uint>& getPolyIndices() { return polyIndices; }
 
-  void extractAttributes();
   void subdivideCatmullClark(Mesh& mesh);
+  void extractAttributes();
 
  private:
+  QVector<uint> twins;
+  QVector<uint> nexts;
+  QVector<uint> prevs;
+  QVector<uint> verts;
+  QVector<uint> edges;
+  QVector<uint> faces;
+
+  bool isQuadMesh;
+
   QVector<QVector3D> vertexCoords;
   QVector<QVector3D> vertexNormals;
-  QVector<unsigned int> polyIndices;
-
-  // for quad tessellation
-  QVector<unsigned int> quadIndices;
+  QVector<uint> polyIndices;
 };
 
 #endif  // MESH_H

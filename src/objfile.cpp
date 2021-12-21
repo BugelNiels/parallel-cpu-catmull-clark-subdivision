@@ -13,6 +13,7 @@ OBJFile::OBJFile(QString fileName) {
 
   qDebug() << ":: Loading" << fileName;
   QFile newModel(fileName);
+  isQuad = true;
 
   if (newModel.open(QIODevice::ReadOnly)) {
     QTextStream fileContents(&newModel);
@@ -53,26 +54,35 @@ OBJFile::OBJFile(QString fileName) {
       } else if (values[0] == "f") {
         // qDebug() << "Face";
 
+        QVector<uint> faceCoordsIndices;
+        QVector<uint> faceTexIndices;
+        QVector<uint> faceNormalIndices;
         for (k = 1; k < values.size(); k++) {
           indices = values[k].split("/");
 
-          // Note -1, OBJ starts indexing from 1.
+          // Note -1, OBJ starts indexing from 1 instead of 0.
 
-          faceCoordInd.append(indices[0].toInt() - 1);
+          faceCoordsIndices.append(indices[0].toInt() - 1);
 
           if (indices.size() > 1) {
             if (!indices[1].isEmpty()) {
-              faceTexInd.append(indices[1].toInt() - 1);
+              faceTexIndices.append(indices[1].toInt() - 1);
             }
 
             if (indices.size() > 2) {
               if (!indices[2].isEmpty()) {
-                faceNormalInd.append(indices[2].toInt() - 1);
+                faceNormalIndices.append(indices[2].toInt() - 1);
               }
             }
           }
         }
-        faceValences.append(k - 1);
+        faceCoordInd.append(faceCoordsIndices);
+        faceTexIndices.append(faceTexIndices);
+        faceNormalIndices.append(faceNormalIndices);
+
+        if (k - 1 != 4) {
+          isQuad = false;
+        }
       } else {
         qDebug() << " * Line contents ignored," << currentLine;
       }

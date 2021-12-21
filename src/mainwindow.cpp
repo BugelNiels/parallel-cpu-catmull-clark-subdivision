@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 
+#include "meshinitializer.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -18,9 +19,12 @@ MainWindow::~MainWindow() {
 void MainWindow::importOBJ(QString filename) {
   qDebug() << filename;
   OBJFile newModel = OBJFile(filename);
+  MeshInitializer initializer(&newModel);
+  Mesh baseMesh = initializer.constructHalfEdgeMesh();
+
   meshes.clear();
   meshes.reserve(10);
-  meshes.append(Mesh(&newModel));
+  meshes.append(baseMesh);
 
   meshIndex = 0;
   updateBuffers();
@@ -69,4 +73,16 @@ void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }
 void MainWindow::on_requireApplyCheckBox_toggled(bool checked) {
   ui->MainDisplay->settings.requireApply = checked;
   ui->applySubdivisionButton->setEnabled(checked);
+}
+
+void MainWindow::on_importDefaultButton_pressed() {
+  importOBJ(
+      "/home/niels/Documents/parallel-catmull-clark-subdivision/src/models/"
+      "OpenCube.obj");
+}
+
+void MainWindow::on_showNormalsCheckBox_toggled(bool checked) {
+  ui->MainDisplay->settings.showNormals = checked;
+  ui->MainDisplay->settings.uniformUpdateRequired = true;
+  ui->MainDisplay->update();
 }

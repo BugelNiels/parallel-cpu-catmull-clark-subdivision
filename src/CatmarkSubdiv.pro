@@ -14,6 +14,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
+  meshinitializer.cpp \
     meshrenderer.cpp \
     objfile.cpp \
     mesh.cpp \
@@ -23,6 +24,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     mesh.h \
+    meshinitializer.h \
     meshrenderer.h \
     objfile.h \
     renderer.h \

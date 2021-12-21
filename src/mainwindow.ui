@@ -97,6 +97,13 @@ QGroupBox::title {
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="showNormalsCheckBox">
+          <property name="text">
+           <string>Show Normals</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="StepsLabel">
           <property name="text">
            <string>Catmull-Clark steps</string>
@@ -140,6 +147,19 @@ QGroupBox::title {
          <string>Time Elapsed:</string>
         </property>
        </widget>
+      </widget>
+      <widget class="QPushButton" name="importDefaultButton">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>80</y>
+         <width>181</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Import Default</string>
+       </property>
       </widget>
      </widget>
     </item>

@@ -88,7 +88,7 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
   // gather attributes for current mesh
   QVector<QVector3D>& vertexCoords = currentMesh.getVertexCoords();
   QVector<QVector3D>& vertexNormals = currentMesh.getVertexNorms();
-  QVector<unsigned int>& polyIndices = currentMesh.getPolyIndices();
+  QVector<uint>& polyIndices = currentMesh.getPolyIndices();
 
   gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
   gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * vertexCoords.size(),
@@ -103,8 +103,7 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
   qDebug() << " → Updated meshNormalsBO";
 
   gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshIndexBO);
-  gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                   sizeof(unsigned int) * polyIndices.size(),
+  gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * polyIndices.size(),
                    polyIndices.data(), GL_DYNAMIC_DRAW);
 
   qDebug() << " → Updated meshIndexBO";
@@ -123,6 +122,7 @@ void MeshRenderer::updateUniforms() {
                          settings->projectionMatrix.data());
   gl->glUniformMatrix3fv(uniNormalMatrix, 1, false,
                          settings->normalMatrix.data());
+  gl->glUniform1i(uniShowNormals, settings->showNormals);
 }
 
 /**

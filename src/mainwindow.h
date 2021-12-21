@@ -34,6 +34,10 @@ class MainWindow : public QMainWindow {
 
   void on_requireApplyCheckBox_toggled(bool checked);
 
+  void on_importDefaultButton_pressed();
+
+  void on_showNormalsCheckBox_toggled(bool checked);
+
  private:
   void subdivide();
   void updateBuffers();

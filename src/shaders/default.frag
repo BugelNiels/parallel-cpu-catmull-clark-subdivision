@@ -56,6 +56,5 @@ void main() {
   } else {
     col = phongShading();
   }
-
   fColor = vec4(col, 1.0);
 }
