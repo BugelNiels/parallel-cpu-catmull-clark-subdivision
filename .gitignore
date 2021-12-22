@@ -2,5 +2,5 @@
 build-*/
 **/.qmake.stash
 **/*.o
-**/MakeFile
+**/Makefile
 **/CatmarkSubdiv
