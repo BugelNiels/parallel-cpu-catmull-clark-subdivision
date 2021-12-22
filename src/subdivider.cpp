@@ -38,8 +38,8 @@ void Subdivider::singleSubdivisionStep(int k) {
   currentMesh->subdivideCatmullClark(*newMesh);
   /* Display info to user */
   long long time = timer.nsecsElapsed();
-  std::cout << "Subdivision time at " << k + 1 << " is " << time / 1000000.0
-            << " milliseconds\n";
+  std::cout << "Subdivision time at level " << k + 1 << " is "
+            << time / 1000000.0 << " milliseconds\n";
   if (currentMesh != baseMesh) {
     delete currentMesh;
   }

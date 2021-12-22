@@ -32,7 +32,7 @@ void QuadMesh::subdivideCatmullClark(QuadMesh& mesh) {
       QVector3D c = QVector3D(0, 0, 0);
       for (int j = 0; j < m; j++) {
         int v = vert(h + j);
-        c += vertexCoords[v];
+        c += vertexCoords.at(v);
       }
       int i = numVerts + face(h);
       mesh.vertexCoords[i] = c / m;

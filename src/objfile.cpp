@@ -2,7 +2,6 @@
 
 #include <QDebug>
 #include <QFile>
-#include <iostream>
 
 /**
  * @brief OBJFile::OBJFile Reads information from the provided .obj file and
@@ -12,7 +11,7 @@
 OBJFile::OBJFile(QString fileName) {
   qDebug() << "✓✓ OBJFile constructor";
 
-  std::cout << ":: Loading " << fileName.toStdString();
+  qDebug() << ":: Loading " << fileName;
   QFile newModel(fileName);
   isQuad = true;
 
