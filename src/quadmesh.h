@@ -17,6 +17,7 @@ class QuadMesh : public Mesh {
   void insertFacePoints(QuadMesh& mesh) override;
   void insertEdgePoints(QuadMesh& mesh) override;
   void facePoint(QuadMesh& mesh, int h, int vd) override;
+  void smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
 };
 
 #endif  // QUADMESH_H

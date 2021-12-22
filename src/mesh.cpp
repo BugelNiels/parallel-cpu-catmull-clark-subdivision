@@ -27,7 +27,7 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<int> twins,
 /**
  * @brief Mesh::~Mesh Destructor
  */
-Mesh::~Mesh() { qDebug() << "Destructed"; }
+Mesh::~Mesh() {}
 
 int Mesh::twin(int h) { return twins[h]; }
 

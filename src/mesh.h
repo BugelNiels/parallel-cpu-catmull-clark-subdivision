@@ -23,6 +23,10 @@ class Mesh {
   inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
   inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
   inline QVector<int>& getPolyIndices() { return polyIndices; }
+  inline int getNumHalfEdges() { return numHalfEdges; }
+  inline int getNumEdges() { return numEdges; }
+  inline int getNumFaces() { return numFaces; }
+  inline int getNumVerts() { return numVerts; }
 
   void extractAttributes();
 

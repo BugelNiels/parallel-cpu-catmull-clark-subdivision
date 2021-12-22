@@ -6,26 +6,29 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
   resizeBuffers(mesh);
 
+#pragma omp parallel
+  {
 // Half Edge Refinement Rules
-#pragma omp parallel for
-  for (int h = 0; h < numHalfEdges; ++h) {
-    edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
-  }
+#pragma omp for
+    for (int h = 0; h < numHalfEdges; ++h) {
+      edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
+    }
 
-  insertFacePoints(mesh);
-  insertEdgePoints(mesh);
-  insertVertexPoints(mesh);
+    insertFacePoints(mesh);
+    insertEdgePoints(mesh);
+    insertVertexPoints(mesh);
+  }
 }
 
 void Mesh::insertFacePoints(QuadMesh& mesh) {
-#pragma omp parallel for
+#pragma omp for
   for (int h = 0; h < numHalfEdges; ++h) {
     facePoint(mesh, h, numVerts);
   }
 }
 
 void Mesh::insertEdgePoints(QuadMesh& mesh) {
-#pragma omp parallel for
+#pragma omp for
   for (int h = 0; h < numHalfEdges; ++h) {
     if (twin(h) < 0) {
       boundaryEdgePoint(mesh, h, numVerts, numFaces);
@@ -36,7 +39,7 @@ void Mesh::insertEdgePoints(QuadMesh& mesh) {
 }
 
 void Mesh::insertVertexPoints(QuadMesh& mesh) {
-#pragma omp parallel for
+#pragma omp for
   for (int h = 0; h < numHalfEdges; ++h) {
     // val = -1 if boundary vertex
     float val = valence(h);

@@ -63,7 +63,7 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>40</y>
+         <y>30</y>
          <width>181</width>
          <height>28</height>
         </rect>
@@ -76,9 +76,9 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>120</y>
+         <y>90</y>
          <width>181</width>
-         <height>221</height>
+         <height>181</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -126,9 +126,9 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>360</y>
+         <y>280</y>
          <width>181</width>
-         <height>171</height>
+         <height>101</height>
         </rect>
        </property>
        <property name="title">
@@ -165,7 +165,7 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>80</y>
+         <y>60</y>
          <width>181</width>
          <height>31</height>
         </rect>
@@ -173,6 +173,156 @@ QGroupBox::title {
        <property name="text">
         <string>Import Default</string>
        </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>390</y>
+         <width>181</width>
+         <height>291</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Mesh Info</string>
+       </property>
+       <widget class="QWidget" name="formLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>160</width>
+          <height>254</height>
+         </rect>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="h0Label">
+           <property name="text">
+            <string>H0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="h0LabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="f0Label">
+           <property name="text">
+            <string>F0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="f0LabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="e0Label">
+           <property name="text">
+            <string>E0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="e0LabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="v0Label">
+           <property name="text">
+            <string>V0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="v0LabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="hdLabel">
+           <property name="text">
+            <string>HD</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="fdLabel">
+           <property name="text">
+            <string>FD</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="edLabel">
+           <property name="text">
+            <string>ED</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="vdLabel">
+           <property name="text">
+            <string>VD</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLabel" name="hdLabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLabel" name="fdLabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QLabel" name="edLabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLabel" name="vdLabelNum">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </widget>
     </item>
