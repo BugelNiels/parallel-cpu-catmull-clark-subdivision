@@ -1,2 +1,6 @@
 **/*.pro.*
 build-*/
+**/.qmake.stash
+**/*.o
+**/MakeFile
+**/CatmarkSubdiv
