@@ -31,9 +31,15 @@ void Mesh::insertEdgePoints(QuadMesh& mesh) {
   for (int h = 0; h < numHalfEdges; ++h) {
     if (twin(h) < 0) {
       boundaryEdgePoint(mesh, h, numVerts, numFaces);
-    } else {
+    } else if (twin(h) > h) {
       smoothEdgePoint(mesh, h, numVerts, numFaces);
+      smoothEdgePoint(mesh, twin(h), numVerts, numFaces);
     }
+    //    if (twin(h) < 0) {
+    //      boundaryEdgePoint(mesh, h, numVerts, numFaces);
+    //    } else {
+    //      smoothEdgePoint(mesh, h, numVerts, numFaces);
+    //    }
   }
 }
 
@@ -68,7 +74,6 @@ void Mesh::recalculateSizes(QuadMesh& mesh) {
 }
 
 void Mesh::resizeBuffers(QuadMesh& mesh) {
-  // TODO: might see improvements by doing this in parallel
   mesh.twins.resize(mesh.numHalfEdges);
   mesh.edges.resize(mesh.numHalfEdges);
   mesh.verts.resize(mesh.numHalfEdges);
