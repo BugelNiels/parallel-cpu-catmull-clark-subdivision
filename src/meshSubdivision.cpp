@@ -13,7 +13,6 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
     for (int h = 0; h < numHalfEdges; ++h) {
       edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
     }
-
     insertFacePoints(mesh);
     insertEdgePoints(mesh);
     insertVertexPoints(mesh);

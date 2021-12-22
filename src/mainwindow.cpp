@@ -108,7 +108,7 @@ void MainWindow::on_requireApplyCheckBox_toggled(bool checked) {
 void MainWindow::on_importDefaultButton_pressed() {
   importOBJ(
       "/home/niels/Documents/parallel-catmull-clark-subdivision/src/models/"
-      "QuadMeshes/Brick.obj");
+      "bigguy.obj");
 }
 
 void MainWindow::on_showNormalsCheckBox_toggled(bool checked) {

@@ -5,8 +5,8 @@
 #include "omp.h"
 
 int main(int argc, char *argv[]) {
-  omp_set_dynamic(false);
-  omp_set_num_threads(8);
+  //  omp_set_dynamic(false);
+  omp_set_num_threads(4);
   QApplication a(argc, argv);
 
   QSurfaceFormat glFormat;
