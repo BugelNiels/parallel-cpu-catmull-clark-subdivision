@@ -24,8 +24,9 @@ void MainWindow::importOBJ(QString filename) {
   qDebug() << filename;
   OBJFile newModel = OBJFile(filename);
   MeshInitializer initializer(&newModel);
-  baseMesh = initializer.constructHalfEdgeMesh();
-  currentMesh = baseMesh;
+  subdivider = (initializer.constructHalfEdgeMesh());
+
+  Mesh* baseMesh = subdivider.getBaseMesh();
   ui->h0LabelNum->setNum(baseMesh->getNumHalfEdges());
   ui->f0LabelNum->setNum(baseMesh->getNumFaces());
   ui->e0LabelNum->setNum(baseMesh->getNumEdges());
@@ -58,18 +59,8 @@ void MainWindow::on_wireframeCheckBox_toggled(bool checked) {
 }
 
 void MainWindow::subdivide() {
-  currentMesh = baseMesh;
-
-  QElapsedTimer timer;
-  timer.start();
-  for (unsigned short k = 0; k < subdivisionLevel; k++) {
-    singleSubdivisionStep(k);
-  }
-  /* Display info to user */
-  long long time = timer.nsecsElapsed();
-  double milsecs = time / 1000000.0;
-  qDebug() << "Total time elapsed for " << subdivisionLevel << ":" << milsecs
-           << "milliseconds";
+  double milsecs = subdivider.subdivide(subdivisionLevel);
+  Mesh* currentMesh = subdivider.getCurrentMesh();
   ui->hdLabelNum->setNum(currentMesh->getNumHalfEdges());
   ui->fdLabelNum->setNum(currentMesh->getNumFaces());
   ui->edLabelNum->setNum(currentMesh->getNumEdges());
@@ -80,22 +71,8 @@ void MainWindow::subdivide() {
   ui->MainDisplay->update();
 }
 
-void MainWindow::singleSubdivisionStep(int k) {
-  QuadMesh* newMesh = new QuadMesh();
-  QElapsedTimer timer;
-  timer.start();
-  currentMesh->subdivideCatmullClark(*newMesh);
-  /* Display info to user */
-  long long time = timer.nsecsElapsed();
-  qDebug() << "Subdivision time at " << k << time / 1000000.0 << "milliseconds";
-  if (currentMesh != baseMesh) {
-    delete currentMesh;
-  }
-  currentMesh = newMesh;
-}
-
 void MainWindow::updateBuffers() {
-  ui->MainDisplay->updateBuffers(*currentMesh);
+  ui->MainDisplay->updateBuffers(*subdivider.getCurrentMesh());
 }
 
 void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }

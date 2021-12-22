@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QElapsedTimer>
 #include <QSurfaceFormat>
 #include <iostream>
 
@@ -35,33 +34,6 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
   return std::find(begin, end, option) != end;
 }
 
-void subdivide(Mesh* baseMesh, int subdivisionLevel) {
-  Mesh* currentMesh;
-  QElapsedTimer timer;
-  timer.start();
-  currentMesh = baseMesh;
-  for (unsigned short k = 0; k < subdivisionLevel; k++) {
-    QuadMesh* newMesh = new QuadMesh();
-    QElapsedTimer subTimer;
-    subTimer.start();
-    currentMesh->subdivideCatmullClark(*newMesh);
-    /* Display info to user */
-    long long subTime = subTimer.nsecsElapsed();
-    std::cout << "Subdivision time at " << k + 1 << " is "
-              << subTime / 1000000.0 << " milliseconds\n";
-    currentMesh = newMesh;
-  }
-  /* Display info to user */
-  long long time = timer.nsecsElapsed();
-  double milsecs = time / 1000000.0;
-  std::cout << "\n---\nTotal time elapsed for " << subdivisionLevel << " : "
-            << milsecs << " milliseconds\n\n";
-  std::cout << "Faces : " << currentMesh->getNumFaces() << "\n";
-  std::cout << "Half Edges : " << currentMesh->getNumHalfEdges() << "\n";
-  std::cout << "Vertices : " << currentMesh->getNumVerts() << "\n";
-  std::cout << "Edges : " << currentMesh->getNumEdges() << "\n\n";
-}
-
 int startGUI(int argc, char* argv[]) {
   QApplication a(argc, argv);
   QSurfaceFormat glFormat;
@@ -76,8 +48,6 @@ int startGUI(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-  //  omp_set_dynamic(false);
-  omp_set_num_threads(4);
   bool usingGUI = true;
 
   if (cmdOptionExists(argv, argv + argc, "-c")) {
@@ -96,16 +66,17 @@ int main(int argc, char* argv[]) {
     std::string executable = argv[0];
     std::cerr << "Usage: "
               << executable.substr(executable.find_last_of('/') + 1)
-              << " -g\n or \n"
+              << "\n or \n"
               << executable.substr(executable.find_last_of('/') + 1)
-              << " -t <num threads> -f <filename> -l <subdivision level>\n";
+              << "-c -t <num threads> -f <filename> -l <subdivision level>\n";
     exit(EXIT_FAILURE);
   }
   omp_set_num_threads(atoi(numThreads));
   OBJFile newModel = OBJFile(QString(filename));
   MeshInitializer initializer(&newModel);
   Mesh* baseMesh = initializer.constructHalfEdgeMesh();
-  subdivide(baseMesh, atoi(subdivLevel));
+  Subdivider subdivider(baseMesh);
+  subdivider.subdivide(atoi(subdivLevel));
 
   exit(EXIT_SUCCESS);
 }

@@ -8,16 +8,13 @@
 class QuadMesh : public Mesh {
  public:
   using Mesh::Mesh;
+  void subdivideCatmullClark(QuadMesh& mesh) override;
 
  protected:
   int next(int h) override;
   int prev(int h) override;
   int face(int h) override;
   int cycleLength(int h) override;
-  void insertFacePoints(QuadMesh& mesh) override;
-  void insertEdgePoints(QuadMesh& mesh) override;
-  void facePoint(QuadMesh& mesh, int h, int vd) override;
-  void smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
 };
 
 #endif  // QUADMESH_H

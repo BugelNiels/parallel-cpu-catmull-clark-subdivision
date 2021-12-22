@@ -29,22 +29,22 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<int> twins,
  */
 Mesh::~Mesh() {}
 
-int Mesh::twin(int h) { return twins[h]; }
+int Mesh::twin(int h) { return twins.at(h); }
 
-int Mesh::vert(int h) { return verts[h]; }
+int Mesh::vert(int h) { return verts.at(h); }
 
-int Mesh::edge(int h) { return edges[h]; }
+int Mesh::edge(int h) { return edges.at(h); }
 
 int Mesh::next(int h) {
   if (h < 0) {
     return -1;
   }
-  return nexts[h];
+  return nexts.at(h);
 }
 
-int Mesh::prev(int h) { return prevs[h]; }
+int Mesh::prev(int h) { return prevs.at(h); }
 
-int Mesh::face(int h) { return faces[h]; }
+int Mesh::face(int h) { return faces.at(h); }
 
 // returns -1 if it is a boundary vertex
 int Mesh::valence(int h) {

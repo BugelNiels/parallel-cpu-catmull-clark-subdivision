@@ -1,1 +1,1 @@
-./CatmarkSubdiv -c -f "models/bigguy.obj" -l 4 -t 2
+./CatmarkSubdiv -c -f "models/bigguy.obj" -l 4 -t 8

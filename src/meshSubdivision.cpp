@@ -13,45 +13,33 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
     for (int h = 0; h < numHalfEdges; ++h) {
       edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
     }
-    insertFacePoints(mesh);
-    insertEdgePoints(mesh);
-    insertVertexPoints(mesh);
-  }
-}
-
-void Mesh::insertFacePoints(QuadMesh& mesh) {
+// Face points
 #pragma omp for
-  for (int h = 0; h < numHalfEdges; ++h) {
-    facePoint(mesh, h, numVerts);
-  }
-}
-
-void Mesh::insertEdgePoints(QuadMesh& mesh) {
-#pragma omp for
-  for (int h = 0; h < numHalfEdges; ++h) {
-    if (twin(h) < 0) {
-      boundaryEdgePoint(mesh, h, numVerts, numFaces);
-    } else if (twin(h) > h) {
-      smoothEdgePoint(mesh, h, numVerts, numFaces);
-      smoothEdgePoint(mesh, twin(h), numVerts, numFaces);
+    for (int h = 0; h < numHalfEdges; ++h) {
+      facePoint(mesh, h, numVerts);
     }
-    //    if (twin(h) < 0) {
-    //      boundaryEdgePoint(mesh, h, numVerts, numFaces);
-    //    } else {
-    //      smoothEdgePoint(mesh, h, numVerts, numFaces);
-    //    }
-  }
-}
 
-void Mesh::insertVertexPoints(QuadMesh& mesh) {
+// Edge points
 #pragma omp for
-  for (int h = 0; h < numHalfEdges; ++h) {
-    // val = -1 if boundary vertex
-    float val = valence(h);
-    if (val < 0) {
-      boundaryVertexPoint(mesh, h);
-    } else {
-      smoothVertexPoint(mesh, h, numVerts, numFaces, val);
+    for (int h = 0; h < numHalfEdges; ++h) {
+      if (twin(h) < 0) {
+        boundaryEdgePoint(mesh, h, numVerts, numFaces);
+      } else if (twin(h) > h) {
+        smoothEdgePoint(mesh, h, numVerts, numFaces);
+        smoothEdgePoint(mesh, twin(h), numVerts, numFaces);
+      }
+    }
+
+// Vertex points
+#pragma omp for
+    for (int h = 0; h < numHalfEdges; ++h) {
+      // val = -1 if boundary vertex
+      float val = valence(h);
+      if (val < 0) {
+        boundaryVertexPoint(mesh, h);
+      } else {
+        smoothVertexPoint(mesh, h, numVerts, numFaces, val);
+      }
     }
   }
 }
@@ -100,15 +88,6 @@ void Mesh::edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed) {
   mesh.edges[4 * h + 3] = hp > twin(hp) ? 2 * edge(hp) + 1 : 2 * edge(hp);
 }
 
-void Mesh::facePoint(QuadMesh& mesh, int h, int vd) {
-  float m = cycleLength(h);
-  int v = vert(h);
-  int i = vd + face(h);
-  QVector3D c = vertexCoords[v] / m;
-#pragma omp critical
-  mesh.vertexCoords[i] += c;
-}
-
 inline void atomicAdd(QVector3D& vecA, const QVector3D& vecB) {
   for (int k = 0; k < 3; ++k) {
     float& a = vecA[k];
@@ -118,32 +97,40 @@ inline void atomicAdd(QVector3D& vecA, const QVector3D& vecB) {
   }
 }
 
+void Mesh::facePoint(QuadMesh& mesh, int h, int vd) {
+  float m = cycleLength(h);
+  int v = vert(h);
+  int i = vd + face(h);
+  QVector3D c = vertexCoords.at(v) / m;
+  atomicAdd(mesh.vertexCoords[i], c);
+}
+
 void Mesh::smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
   int v = vert(h);
   int i = vd + face(h);
   int j = vd + fd + edge(h);
-  QVector3D c = (vertexCoords[v] + mesh.vertexCoords[i]) / 4.0f;
-  atomicAdd(mesh.vertexCoords[j], c);
+  QVector3D c = (vertexCoords.at(v) + mesh.vertexCoords.at(i)) / 4.0f;
+  mesh.vertexCoords[j] += c;
 }
 
 void Mesh::boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
   int v = vert(h);
   int vnext = vert(next(h));
   int j = vd + fd + edge(h);
-  mesh.vertexCoords[j] = (vertexCoords[v] + vertexCoords[vnext]) / 2.0f;
+  mesh.vertexCoords[j] = (vertexCoords.at(v) + vertexCoords.at(vnext)) / 2.0f;
 }
 
 void Mesh::smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n) {
   int v = vert(h);
   int i = vd + face(h);
   int j = vd + fd + edge(h);
-  QVector3D c = (4 * mesh.vertexCoords[j] - mesh.vertexCoords[i] +
-                 (n - 3) * vertexCoords[v]) /
+  QVector3D c = (4 * mesh.vertexCoords.at(j) - mesh.vertexCoords.at(i) +
+                 (n - 3) * vertexCoords.at(v)) /
                 (n * n);
   atomicAdd(mesh.vertexCoords[v], c);
 }
 
 void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h) {
   int v = vert(h);
-  mesh.vertexCoords[v] = vertexCoords[v];
+  mesh.vertexCoords[v] = vertexCoords.at(v);
 }

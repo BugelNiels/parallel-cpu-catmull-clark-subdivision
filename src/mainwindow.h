@@ -6,6 +6,7 @@
 
 #include "mesh.h"
 #include "objfile.h"
+#include "subdivider.h"
 
 namespace Ui {
 class MainWindow;
@@ -18,11 +19,8 @@ class MainWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit MainWindow(QWidget* parent = 0);
+  explicit MainWindow(QWidget* parent = nullptr);
   ~MainWindow();
-
-  Mesh* baseMesh;
-  Mesh* currentMesh;
 
   void importOBJ(QString filename);
 
@@ -40,8 +38,8 @@ class MainWindow : public QMainWindow {
   void on_showNormalsCheckBox_toggled(bool checked);
 
  private:
+  Subdivider subdivider = nullptr;
   void subdivide();
-  void singleSubdivisionStep(int k);
   void updateBuffers();
   Ui::MainWindow* ui;
   int subdivisionLevel;

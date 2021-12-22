@@ -30,7 +30,7 @@ class Mesh {
 
   void extractAttributes();
 
-  void subdivideCatmullClark(QuadMesh& mesh);
+  virtual void subdivideCatmullClark(QuadMesh& mesh);
 
  protected:
   QVector<int> twins;
@@ -61,10 +61,6 @@ class Mesh {
 
   void recalculateSizes(QuadMesh& mesh);
   void resizeBuffers(QuadMesh& mesh);
-
-  virtual void insertFacePoints(QuadMesh& mesh);
-  virtual void insertEdgePoints(QuadMesh& mesh);
-  void insertVertexPoints(QuadMesh& mesh);
 
   void edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed);
   virtual void facePoint(QuadMesh& mesh, int h, int vd);

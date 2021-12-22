@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     mesh.cpp \
     mainview.cpp \
   quadmesh.cpp \
-    settings.cpp
+    settings.cpp \
+  subdivider.cpp
 
 HEADERS  += mainwindow.h \
     mesh.h \
@@ -31,7 +32,8 @@ HEADERS  += mainwindow.h \
     quadmesh.h \
     renderer.h \
     settings.h \
-    mainview.h
+    mainview.h \
+    subdivider.h
 
 FORMS    += mainwindow.ui
 
