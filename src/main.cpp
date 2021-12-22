@@ -55,7 +55,8 @@ void subdivide(Mesh* currentMesh, int subdivisionLevel) {
             << "milliseconds";
 }
 
-void startGUI() {
+int startGUI(int argc, char* argv[]) {
+  QApplication a(argc, argv);
   QSurfaceFormat glFormat;
   glFormat.setProfile(QSurfaceFormat::CoreProfile);
   glFormat.setVersion(4, 1);
@@ -64,12 +65,12 @@ void startGUI() {
 
   MainWindow w;
   w.show();
+  return a.exec();
 }
 
 int main(int argc, char* argv[]) {
   //  omp_set_dynamic(false);
   omp_set_num_threads(4);
-  QApplication a(argc, argv);
   bool usingGUI = true;
 
   if (cmdOptionExists(argv, argv + argc, "-c")) {
@@ -77,7 +78,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (usingGUI) {
-    startGUI();
+    return startGUI(argc, argv);
   }
 
   char* filename = getCmdOption(argv, argv + argc, "-f");
