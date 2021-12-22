@@ -18,10 +18,14 @@ void QuadMesh::insertFacePoints(QuadMesh& mesh) {
   for (int h = 0; h < numHalfEdges; h += 4) {
     // everything is a quad and these are stored contiguously in memory.
     // avoids the need for critical sections
-    facePoint(mesh, h, numVerts);
-    facePoint(mesh, h + 1, numVerts);
-    facePoint(mesh, h + 2, numVerts);
-    facePoint(mesh, h + 3, numVerts);
+      float m = cycleLength(h);
+      QVector3D c = QVector3D(0,0,0);
+      for(int j = 0; j < m; j++){
+          int v = vert(h + j);
+          c += vertexCoords[v];
+      }
+      int i = numVerts + face(h);
+      mesh.vertexCoords[i] = c / m;
   }
 }
 
