@@ -102,19 +102,21 @@ void Mesh::facePoint(QuadMesh& mesh, int h, int vd) {
   mesh.vertexCoords[i] += c;
 }
 
+inline void atomicAdd(QVector3D& vecA, const QVector3D& vecB) {
+  for (int k = 0; k < 3; ++k) {
+    float& a = vecA[k];
+    const float b = vecB[k];
+#pragma omp atomic
+    a += b;
+  }
+}
+
 void Mesh::smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
   int v = vert(h);
   int i = vd + face(h);
   int j = vd + fd + edge(h);
   QVector3D c = (vertexCoords[v] + mesh.vertexCoords[i]) / 4.0f;
-  for (int k = 0; k < 3; ++k) {
-    float& a = mesh.vertexCoords[j][k];
-    float b = c[k];
-#pragma omp atomic
-    a += b;
-  }
-  //#pragma omp critical
-  //  mesh.vertexCoords[j] += c;
+  atomicAdd(mesh.vertexCoords[j], c);
 }
 
 void Mesh::boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
@@ -131,14 +133,7 @@ void Mesh::smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n) {
   QVector3D c = (4 * mesh.vertexCoords[j] - mesh.vertexCoords[i] +
                  (n - 3) * vertexCoords[v]) /
                 (n * n);
-  for (int k = 0; k < 3; ++k) {
-    float& a = mesh.vertexCoords[v][k];
-    float b = c[k];
-#pragma omp atomic
-    a += b;
-  }
-  //#pragma omp critical
-  //  mesh.vertexCoords[v] += c;
+  atomicAdd(mesh.vertexCoords[v], c);
 }
 
 void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h) {
