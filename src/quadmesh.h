@@ -14,7 +14,6 @@ class QuadMesh : public Mesh {
   int prev(int h) override;
   int face(int h) override;
   int cycleLength(int h) override;
-  int getNumberOfFaces() override;
 };
 
 #endif  // QUADMESH_H

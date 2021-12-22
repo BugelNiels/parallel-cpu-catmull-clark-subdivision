@@ -147,6 +147,19 @@ QGroupBox::title {
          <string>Time Elapsed:</string>
         </property>
        </widget>
+       <widget class="QLabel" name="timeLabel">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>71</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
       </widget>
       <widget class="QPushButton" name="importDefaultButton">
        <property name="geometry">

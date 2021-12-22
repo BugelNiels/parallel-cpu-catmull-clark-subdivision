@@ -63,8 +63,10 @@ void MainWindow::subdivide() {
   }
   /* Display info to user */
   long long time = timer.nsecsElapsed();
-  qDebug() << "Total time elapsed for " << subdivisionLevel << ":"
-           << time / 1000000.0 << "milliseconds";
+  double milsecs = time / 1000000.0;
+  qDebug() << "Total time elapsed for " << subdivisionLevel << ":" << milsecs
+           << "milliseconds";
+  ui->timeLabel->setNum(milsecs);
   ui->MainDisplay->settings.uniformUpdateRequired = true;
   updateBuffers();
   ui->MainDisplay->update();

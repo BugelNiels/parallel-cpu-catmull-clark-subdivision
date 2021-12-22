@@ -34,10 +34,10 @@ Mesh* MeshInitializer::constructHalfEdgeMesh() {
   if (loadedObj->isQuad) {
     qDebug() << "Creating a quad mesh";
     return new QuadMesh(loadedObj->vertexCoords, twins, nexts, prevs, verts,
-                        edges, faces);
+                        edges, faces, edgeList.size());
   }
   return new Mesh(loadedObj->vertexCoords, twins, nexts, prevs, verts, edges,
-                  faces);
+                  faces, edgeList.size());
 }
 
 void MeshInitializer::addHalfEdge(int h, int faceIdx, QVector<int> faceIndices,

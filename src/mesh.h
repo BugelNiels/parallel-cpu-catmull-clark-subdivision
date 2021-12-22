@@ -17,7 +17,7 @@ class Mesh {
   // TODO: refactor
   Mesh(QVector<QVector3D> vertCoords, QVector<int> twins, QVector<int> nexts,
        QVector<int> prevs, QVector<int> verts, QVector<int> edges,
-       QVector<int> faces);
+       QVector<int> faces, int nEdges);
   virtual ~Mesh();
 
   inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
@@ -37,6 +37,9 @@ class Mesh {
   QVector<int> faces;
 
   int numHalfEdges;
+  int numEdges;
+  int numFaces;
+  int numVerts;
 
   QVector<QVector3D> vertexCoords;
   QVector<QVector3D> vertexNormals;
@@ -52,8 +55,15 @@ class Mesh {
   virtual int cycleLength(int h);
   int valence(int h);
 
-  int getNumberOfEdges();
-  virtual int getNumberOfFaces();
+  void recalculateSizes(QuadMesh& mesh);
+  void resizeBuffers(QuadMesh& mesh);
+
+  void edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed);
+  void facePoint(QuadMesh& mesh, int h, int vd);
+  void smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
+  void boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
+  void smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n);
+  void boundaryVertexPoint(QuadMesh& mesh, int h);
 };
 
 #endif  // MESH_H

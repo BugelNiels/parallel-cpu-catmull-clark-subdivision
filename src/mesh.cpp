@@ -9,7 +9,7 @@ Mesh::Mesh() {}
 
 Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<int> twins,
            QVector<int> nexts, QVector<int> prevs, QVector<int> verts,
-           QVector<int> edges, QVector<int> faces) {
+           QVector<int> edges, QVector<int> faces, int nEdges) {
   vertexCoords = vertCoords;
   this->twins = twins;
   this->nexts = nexts;
@@ -17,7 +17,11 @@ Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<int> twins,
   this->verts = verts;
   this->edges = edges;
   this->faces = faces;
+
   numHalfEdges = verts.size();
+  numEdges = nEdges;
+  numFaces = face(faces.size() - 1) + 1;
+  numVerts = vertCoords.size();
 }
 
 /**
@@ -42,10 +46,14 @@ int Mesh::prev(int h) { return prevs[h]; }
 
 int Mesh::face(int h) { return faces[h]; }
 
+// returns -1 if it is a boundary vertex
 int Mesh::valence(int h) {
   int n = 1;
   int hp = next(twin(h));
   while (hp != h) {
+    if (hp < 0) {
+      return -1;
+    }
     hp = next(twin(hp));
     n++;
   }
