@@ -10,18 +10,21 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
 #pragma omp parallel for
   for (int h = 0; h < numHalfEdges; ++h) {
     edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
-    // face points are not dependent on edge refinement and can be calculated
-    // here
-    facePoint(mesh, h, numVerts);
   }
 
-// Face Points
-//#pragma omp parallel for
-//  for (int h = 0; h < numHalfEdges; ++h) {
-//    facePoint(mesh, h, numVerts);
-//  }
+  insertFacePoints(mesh);
+  insertEdgePoints(mesh);
+  insertVertexPoints(mesh);
+}
 
-// Edge Points
+void Mesh::insertFacePoints(QuadMesh& mesh) {
+#pragma omp parallel for
+  for (int h = 0; h < numHalfEdges; ++h) {
+    facePoint(mesh, h, numVerts);
+  }
+}
+
+void Mesh::insertEdgePoints(QuadMesh& mesh) {
 #pragma omp parallel for
   for (int h = 0; h < numHalfEdges; ++h) {
     if (twin(h) < 0) {
@@ -30,8 +33,9 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
       smoothEdgePoint(mesh, h, numVerts, numFaces);
     }
   }
+}
 
-// Vertex Points
+void Mesh::insertVertexPoints(QuadMesh& mesh) {
 #pragma omp parallel for
   for (int h = 0; h < numHalfEdges; ++h) {
     // val = -1 if boundary vertex
@@ -103,8 +107,14 @@ void Mesh::smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
   int i = vd + face(h);
   int j = vd + fd + edge(h);
   QVector3D c = (vertexCoords[v] + mesh.vertexCoords[i]) / 4.0f;
-#pragma omp critical
-  mesh.vertexCoords[j] += c;
+  for (int k = 0; k < 3; ++k) {
+    float& a = mesh.vertexCoords[j][k];
+    float b = c[k];
+#pragma omp atomic
+    a += b;
+  }
+  //#pragma omp critical
+  //  mesh.vertexCoords[j] += c;
 }
 
 void Mesh::boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
@@ -121,8 +131,14 @@ void Mesh::smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n) {
   QVector3D c = (4 * mesh.vertexCoords[j] - mesh.vertexCoords[i] +
                  (n - 3) * vertexCoords[v]) /
                 (n * n);
-#pragma omp critical
-  mesh.vertexCoords[v] += c;
+  for (int k = 0; k < 3; ++k) {
+    float& a = mesh.vertexCoords[v][k];
+    float b = c[k];
+#pragma omp atomic
+    a += b;
+  }
+  //#pragma omp critical
+  //  mesh.vertexCoords[v] += c;
 }
 
 void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h) {
