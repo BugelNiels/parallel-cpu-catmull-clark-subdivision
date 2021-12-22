@@ -70,10 +70,10 @@ int main(int argc, char* argv[]) {
   //  omp_set_dynamic(false);
   omp_set_num_threads(4);
   QApplication a(argc, argv);
-  bool usingGUI = false;
+  bool usingGUI = true;
 
-  if (cmdOptionExists(argv, argv + argc, "-g")) {
-    usingGUI = true;
+  if (cmdOptionExists(argv, argv + argc, "-c")) {
+    usingGUI = false;
   }
 
   if (usingGUI) {
