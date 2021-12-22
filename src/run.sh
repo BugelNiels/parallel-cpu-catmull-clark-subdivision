@@ -1,0 +1,1 @@
+./CatmarkSubdiv -c -f "/home/niels/Documents/parallel-catmull-clark-subdivision/src/models/bigguy.obj" -l 4 -t 2

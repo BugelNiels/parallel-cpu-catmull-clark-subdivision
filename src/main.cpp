@@ -5,6 +5,7 @@
 
 #include "mainwindow.h"
 #include "meshinitializer.h"
+#include "objfile.h"
 #include "omp.h"
 #include "quadmesh.h"
 
@@ -34,9 +35,11 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
   return std::find(begin, end, option) != end;
 }
 
-void subdivide(Mesh* currentMesh, int subdivisionLevel) {
+void subdivide(Mesh* baseMesh, int subdivisionLevel) {
+  Mesh* currentMesh;
   QElapsedTimer timer;
   timer.start();
+  currentMesh = baseMesh;
   for (unsigned short k = 0; k < subdivisionLevel; k++) {
     QuadMesh* newMesh = new QuadMesh();
     QElapsedTimer subTimer;
@@ -44,15 +47,19 @@ void subdivide(Mesh* currentMesh, int subdivisionLevel) {
     currentMesh->subdivideCatmullClark(*newMesh);
     /* Display info to user */
     long long subTime = subTimer.nsecsElapsed();
-    std::cout << "Subdivision time at " << k << subTime / 1000000.0
-              << "milliseconds";
+    std::cout << "Subdivision time at " << k + 1 << " is "
+              << subTime / 1000000.0 << " milliseconds\n";
     currentMesh = newMesh;
   }
   /* Display info to user */
   long long time = timer.nsecsElapsed();
   double milsecs = time / 1000000.0;
-  std::cout << "Total time elapsed for " << subdivisionLevel << ":" << milsecs
-            << "milliseconds";
+  std::cout << "\n---\nTotal time elapsed for " << subdivisionLevel << " : "
+            << milsecs << " milliseconds\n\n";
+  std::cout << "Faces : " << currentMesh->getNumFaces() << "\n";
+  std::cout << "Half Edges : " << currentMesh->getNumHalfEdges() << "\n";
+  std::cout << "Vertices : " << currentMesh->getNumVerts() << "\n";
+  std::cout << "Edges : " << currentMesh->getNumEdges() << "\n\n";
 }
 
 int startGUI(int argc, char* argv[]) {
@@ -95,7 +102,7 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
   omp_set_num_threads(atoi(numThreads));
-  OBJFile newModel = OBJFile(filename);
+  OBJFile newModel = OBJFile(QString(filename));
   MeshInitializer initializer(&newModel);
   Mesh* baseMesh = initializer.constructHalfEdgeMesh();
   subdivide(baseMesh, atoi(subdivLevel));
