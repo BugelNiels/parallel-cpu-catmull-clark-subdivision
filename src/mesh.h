@@ -20,9 +20,18 @@ class Mesh {
        QVector<int> faces, int nEdges);
   virtual ~Mesh();
 
+  // Getters
   inline QVector<QVector3D>& getVertexCoords() { return vertexCoords; }
   inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
   inline QVector<int>& getPolyIndices() { return polyIndices; }
+
+  inline QVector<int> getTwins() { return twins; }
+  inline QVector<int> getNexts() { return nexts; }
+  inline QVector<int> getPrevs() { return prevs; }
+  inline QVector<int> getVerts() { return verts; }
+  inline QVector<int> getEdges() { return edges; }
+  inline QVector<int> getFaces() { return faces; }
+
   inline int getNumHalfEdges() { return numHalfEdges; }
   inline int getNumEdges() { return numEdges; }
   inline int getNumFaces() { return numFaces; }

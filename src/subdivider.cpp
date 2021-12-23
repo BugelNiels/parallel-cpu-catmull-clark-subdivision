@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "quadmesh.h"
-
 #include "subdivide.h"
 
 Subdivider::Subdivider(Mesh* mesh) {
@@ -13,6 +12,30 @@ Subdivider::Subdivider(Mesh* mesh) {
 }
 
 void Subdivider::subdivideGPU(int subdivisionLevel) {
+  // makes all calls a lot shorter;
+  Mesh* m = baseMesh;
+  float* xCoords = (float*)malloc(m->getNumVerts() * sizeof(float));
+  float* yCoords = (float*)malloc(m->getNumVerts() * sizeof(float));
+  float* zCoords = (float*)malloc(m->getNumVerts() * sizeof(float));
+  int i = 0;
+  for (QVector3D c : m->getVertexCoords()) {
+    xCoords[i] = c.x();
+    yCoords[i] = c.y();
+    zCoords[i] = c.z();
+    i++;
+  }
+  int* twins = m->getTwins().data();
+  int* nexts = m->getNexts().data();
+  int* prevs = m->getPrevs().data();
+  int* verts = m->getVerts().data();
+  int* edges = m->getEdges().data();
+  int* faces = m->getFaces().data();
+  double milsecs;
+  milsecs = timedSubdivision(xCoords, yCoords, zCoords, m->getNumVerts(),
+                             m->getNumHalfEdges(), m->getNumFaces(),
+                             m->getNumEdges(), twins, nexts, prevs, verts,
+                             edges, faces, subdivisionLevel);
+  std::cout << milsecs;
 }
 
 double Subdivider::subdivide(int subdivisionLevel, int iterations) {

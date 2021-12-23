@@ -9,10 +9,6 @@ Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges) {
 	mesh.numHalfEdges = numHalfEdges;
 	mesh.numEdges = numEdges;
 	mesh.numFaces = numFaces;
-
-	mesh.xCoords = (float*)malloc(numVerts * sizeof(float));
-	mesh.yCoords = (float*)malloc(numVerts * sizeof(float));
-	mesh.zCoords = (float*)malloc(numVerts * sizeof(float));
 	return mesh;
 } 
 
@@ -21,13 +17,13 @@ void subdivide(Mesh mesh, int subdivisionLevel) {
 }
 
 // returns the number of milsecs the subdivision took
-double timedSubdivision(float** vertCoords, int numVerts, int numHalfEdges, int numFaces, int numEdges, int* twins, int* nexts, int* prevs, int* verts, int* edges, int* faces, int subdivisionLevel) {
+double timedSubdivision(float* xCoords, float* yCoords, float* zCoords, int numVerts, int numHalfEdges, int numFaces, int numEdges, int* twins, int* nexts, int* prevs, int* verts, int* edges, int* faces, int subdivisionLevel) {
 	Mesh baseMesh = initMesh(numVerts, numHalfEdges, numFaces, numEdges);
-	for(int i = 0; i < numVerts; ++i) {
-		baseMesh.xCoords[i] = vertCoords[i][0];
-		baseMesh.yCoords[i] = vertCoords[i][1];
-		baseMesh.zCoords[i] = vertCoords[i][2];
-	}
+
+	baseMesh.xCoords = xCoords;
+	baseMesh.yCoords = yCoords;
+	baseMesh.zCoords = zCoords;
+
 	baseMesh.twins = twins;
 	baseMesh.nexts = nexts;
 	baseMesh.prevs = prevs;
