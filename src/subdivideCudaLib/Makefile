@@ -1,6 +1,6 @@
 # --- MACROS
 # define program name
-MAIN= CudaSubdivision
+MAIN= libCudaSubdivision
 
 # define the C compiler to use
 CC= nvcc
