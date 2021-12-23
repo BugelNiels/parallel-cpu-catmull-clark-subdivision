@@ -5,9 +5,14 @@
 
 #include "quadmesh.h"
 
+#include "subdivide.h"
+
 Subdivider::Subdivider(Mesh* mesh) {
   baseMesh = mesh;
   currentMesh = baseMesh;
+}
+
+void Subdivider::subdivideGPU(int subdivisionLevel) {
 }
 
 double Subdivider::subdivide(int subdivisionLevel, int iterations) {

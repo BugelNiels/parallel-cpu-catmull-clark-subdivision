@@ -7,7 +7,6 @@
 #include "objfile.h"
 #include "omp.h"
 #include "quadmesh.h"
-#include "subdivide.h"
 
 
 /**
@@ -85,8 +84,6 @@ int main(int argc, char* argv[]) {
   } else {
     subdivider.subdivide(atoi(subdivLevel), atoi(numIter));
   }
-
-  test();
 
   exit(EXIT_SUCCESS);
 }

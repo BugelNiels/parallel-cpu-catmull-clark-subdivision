@@ -1,6 +1,1 @@
-
-double timedSubdivision(float *data);
-
-int subdivide(float *data);
-
-void test();
+double timedSubdivision(float** vertCoords, int numVerts, int numHalfEdges, int numFaces, int numEdges, int* twins, int* nexts, int* prevs, int* verts, int* edges, int* faces, int subdivisionLevel);
