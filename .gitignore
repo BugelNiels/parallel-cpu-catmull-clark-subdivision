@@ -4,3 +4,5 @@ build-*/
 **/*.o
 **/Makefile
 **/CatmarkSubdiv
+**/moc*.cpp
+**/qrc_resources.cpp
