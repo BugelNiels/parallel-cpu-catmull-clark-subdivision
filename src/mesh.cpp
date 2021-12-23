@@ -35,12 +35,7 @@ int Mesh::vert(int h) { return verts.at(h); }
 
 int Mesh::edge(int h) { return edges.at(h); }
 
-int Mesh::next(int h) {
-  if (h < 0) {
-    return -1;
-  }
-  return nexts.at(h);
-}
+int Mesh::next(int h) { return nexts.at(h); }
 
 int Mesh::prev(int h) { return prevs.at(h); }
 
@@ -48,13 +43,21 @@ int Mesh::face(int h) { return faces.at(h); }
 
 // returns -1 if it is a boundary vertex
 int Mesh::valence(int h) {
+  int ht = twin(h);
+  if (ht < 0) {
+    return -1;
+  }
   int n = 1;
-  int hp = next(twin(h));
+  int hp = next(ht);
   while (hp != h) {
     if (hp < 0) {
       return -1;
     }
-    hp = next(twin(hp));
+    ht = twin(hp);
+    if (ht < 0) {
+      return -1;
+    }
+    hp = next(ht);
     n++;
   }
   return n;

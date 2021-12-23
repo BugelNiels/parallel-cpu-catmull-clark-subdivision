@@ -1,26 +1,19 @@
 #include "quadmesh.h"
 
-int QuadMesh::next(int h) {
-  if (h < 0) {
-    return -1;
-  }
-  return h % 4 == 3 ? h - 3 : h + 1;
-}
+int QuadMesh::next(int h) { return h % 4 == 3 ? h - 3 : h + 1; }
 
 int QuadMesh::prev(int h) { return h % 4 == 0 ? h + 3 : h - 1; }
 
 int QuadMesh::face(int h) { return h / 4; }
 
-int QuadMesh::cycleLength(int h) { return 4; }
-
 void QuadMesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
-  resizeBuffers(mesh);
+  mesh.resizeBuffers();
 
 #pragma omp parallel
   {
 // Half Edge Refinement Rules
-#pragma omp for
+#pragma omp for nowait
     for (int h = 0; h < numHalfEdges; ++h) {
       edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
     }
@@ -28,14 +21,13 @@ void QuadMesh::subdivideCatmullClark(QuadMesh& mesh) {
     for (int h = 0; h < numHalfEdges; h += 4) {
       // everything is a quad and these are stored contiguously in memory.
       // avoids the need for critical sections
-      float m = cycleLength(h);
-      QVector3D c = QVector3D(0, 0, 0);
-      for (int j = 0; j < m; j++) {
+      QVector3D c;
+      for (int j = 0; j < 4; j++) {
         int v = vert(h + j);
         c += vertexCoords.at(v);
       }
       int i = numVerts + face(h);
-      mesh.vertexCoords[i] = c / m;
+      mesh.vertexCoords[i] = c / 4.0f;
     }
 
 #pragma omp for
