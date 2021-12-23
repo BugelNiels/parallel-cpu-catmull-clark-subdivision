@@ -2,7 +2,7 @@
 build-*/
 **/.qmake.stash
 **/*.o
-**/Makefile
+src/Makefile
 **/CatmarkSubdiv
 **/moc*.cpp
 **/qrc_resources.cpp
