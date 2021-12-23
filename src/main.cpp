@@ -8,7 +8,6 @@
 #include "omp.h"
 #include "quadmesh.h"
 
-
 /**
  * @brief getCmdOption Retrieves the string after the provided flag
  * @param begin Start of the array to be searched in
@@ -50,13 +49,7 @@ int startGUI(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-  bool usingGUI = true;
-
-  if (cmdOptionExists(argv, argv + argc, "-c")) {
-    usingGUI = false;
-  }
-
-  if (usingGUI) {
+  if (!cmdOptionExists(argv, argv + argc, "-c")) {
     return startGUI(argc, argv);
   }
 
@@ -64,7 +57,6 @@ int main(int argc, char* argv[]) {
   char* subdivLevel = getCmdOption(argv, argv + argc, "-l");
   char* numThreads = getCmdOption(argv, argv + argc, "-t");
   char* numIter = getCmdOption(argv, argv + argc, "-i");
-  char* gpu = getCmdOption(argv, argv + argc, "-gpu");
 
   if (filename == nullptr || subdivLevel == nullptr || numThreads == nullptr) {
     std::string executable = argv[0];
@@ -80,7 +72,8 @@ int main(int argc, char* argv[]) {
   MeshInitializer initializer(&newModel);
   Mesh* baseMesh = initializer.constructHalfEdgeMesh();
   Subdivider subdivider(baseMesh);
-  if(gpu != nullptr) {
+  if (cmdOptionExists(argv, argv + argc, "-gpu")) {
+    std::cout << "subdividing on GPU";
     subdivider.subdivideGPU(atoi(subdivLevel));
   } else if (numIter == nullptr) {
     subdivider.subdivide(atoi(subdivLevel));
