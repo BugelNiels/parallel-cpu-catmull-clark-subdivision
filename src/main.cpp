@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   char* numThreads = getCmdOption(argv, argv + argc, "-t");
   char* numIter = getCmdOption(argv, argv + argc, "-i");
 
-  if (filename == nullptr || subdivLevel == nullptr || numThreads == nullptr) {
+  if (filename == nullptr || subdivLevel == nullptr) {
     std::string executable = argv[0];
     std::cerr << "Usage: "
               << executable.substr(executable.find_last_of('/') + 1)
@@ -67,19 +67,27 @@ int main(int argc, char* argv[]) {
               << "-c -t <num threads> -f <filename> -l <subdivision level>\n";
     exit(EXIT_FAILURE);
   }
-  omp_set_num_threads(atoi(numThreads));
+  if(numThreads == nullptr) {
+    omp_set_num_threads(4);  
+
+  } else {
+    omp_set_num_threads(atoi(numThreads));    
+  }
   OBJFile newModel = OBJFile(QString(filename));
   MeshInitializer initializer(&newModel);
   Mesh* baseMesh = initializer.constructHalfEdgeMesh();
   Subdivider subdivider(baseMesh);
   if (cmdOptionExists(argv, argv + argc, "-gpu")) {
-    std::cout << "subdividing on GPU";
+    std::cout << "subdividing on GPU\n";
     subdivider.subdivideGPU(atoi(subdivLevel));
   } else if (numIter == nullptr) {
+    std::cout << "subdividing on CPU\n";
     subdivider.subdivide(atoi(subdivLevel));
   } else {
+    int iterations = atoi(numIter);
+    std::cout << "subdividing on CPU for " << iterations << " iterations\n";
     subdivider.subdivide(atoi(subdivLevel), atoi(numIter));
   }
-
-  exit(EXIT_SUCCESS);
+  std::cout << "Subdivision complete!\n";
+  return 0;
 }
