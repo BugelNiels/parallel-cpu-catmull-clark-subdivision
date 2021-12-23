@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
   char* subdivLevel = getCmdOption(argv, argv + argc, "-l");
   char* numThreads = getCmdOption(argv, argv + argc, "-t");
   char* numIter = getCmdOption(argv, argv + argc, "-i");
+  char* gpu = getCmdOption(argv, argv + argc, "-gpu");
 
   if (filename == nullptr || subdivLevel == nullptr || numThreads == nullptr) {
     std::string executable = argv[0];
@@ -79,7 +80,9 @@ int main(int argc, char* argv[]) {
   MeshInitializer initializer(&newModel);
   Mesh* baseMesh = initializer.constructHalfEdgeMesh();
   Subdivider subdivider(baseMesh);
-  if (numIter == nullptr) {
+  if(gpu != nullptr) {
+    subdivider.subdivideGPU(atoi(subdivLevel));
+  } else if (numIter == nullptr) {
     subdivider.subdivide(atoi(subdivLevel));
   } else {
     subdivider.subdivide(atoi(subdivLevel), atoi(numIter));
