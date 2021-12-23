@@ -17,7 +17,7 @@ LIBS= -lm
 SRCS= subdivide.cu
 
 # define C header files
-HDRS= subdivide.h
+HDRS= libheaders/subdivide.h
 
 # --- TARGETS
 all: ${MAIN}
