@@ -35,6 +35,7 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
 }
 
 int startGUI(int argc, char* argv[]) {
+  omp_set_num_threads(8);
   QApplication a(argc, argv);
   QSurfaceFormat glFormat;
   glFormat.setProfile(QSurfaceFormat::CoreProfile);

@@ -4,12 +4,12 @@
 
 void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
-  resizeBuffers(mesh);
+  mesh.resizeBuffers();
 
 #pragma omp parallel
   {
 // Half Edge Refinement Rules
-#pragma omp for
+#pragma omp for nowait
     for (int h = 0; h < numHalfEdges; ++h) {
       edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
     }
@@ -61,18 +61,19 @@ void Mesh::recalculateSizes(QuadMesh& mesh) {
   mesh.numVerts = numVerts + numFaces + numEdges;
 }
 
-void Mesh::resizeBuffers(QuadMesh& mesh) {
-  mesh.twins.resize(mesh.numHalfEdges);
-  mesh.edges.resize(mesh.numHalfEdges);
-  mesh.verts.resize(mesh.numHalfEdges);
-  mesh.vertexCoords.resize(mesh.numVerts);
+void Mesh::resizeBuffers() {
+  twins.resize(numHalfEdges);
+  edges.resize(numHalfEdges);
+  verts.resize(numHalfEdges);
+  vertexCoords.resize(numVerts);
 }
 
 void Mesh::edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed) {
   int hp = prev(h);
 
   // For boundaries
-  mesh.twins[4 * h] = 4 * next(twin(h)) + 3;
+  int ht = twin(h);
+  mesh.twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
   mesh.twins[4 * h + 1] = 4 * next(h) + 2;
   mesh.twins[4 * h + 2] = 4 * prev(h) + 1;
   mesh.twins[4 * h + 3] = 4 * twin(hp);
@@ -82,7 +83,7 @@ void Mesh::edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed) {
   mesh.verts[4 * h + 2] = vd + face(h);
   mesh.verts[4 * h + 3] = vd + fd + edge(hp);
 
-  mesh.edges[4 * h] = h > twin(h) ? 2 * edge(h) : 2 * edge(h) + 1;
+  mesh.edges[4 * h] = h > ht ? 2 * edge(h) : 2 * edge(h) + 1;
   mesh.edges[4 * h + 1] = 2 * ed + h;
   mesh.edges[4 * h + 2] = 2 * ed + hp;
   mesh.edges[4 * h + 3] = hp > twin(hp) ? 2 * edge(hp) + 1 : 2 * edge(hp);

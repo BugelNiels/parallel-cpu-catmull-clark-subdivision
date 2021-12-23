@@ -56,11 +56,10 @@ class Mesh {
   int vert(int h);
   int edge(int h);
 
-  virtual int cycleLength(int h);
   int valence(int h);
 
   void recalculateSizes(QuadMesh& mesh);
-  void resizeBuffers(QuadMesh& mesh);
+  void resizeBuffers();
 
   void edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed);
   virtual void facePoint(QuadMesh& mesh, int h, int vd);
@@ -68,6 +67,9 @@ class Mesh {
   void boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
   void smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n);
   void boundaryVertexPoint(QuadMesh& mesh, int h);
+
+ private:
+  int cycleLength(int h);
 };
 
 #endif  // MESH_H
