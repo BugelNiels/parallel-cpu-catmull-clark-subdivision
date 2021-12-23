@@ -6,6 +6,7 @@
 class Subdivider {
  public:
   Subdivider(Mesh* mesh);
+  double subdivide(int subdivisionLevel, int iterations);
   double subdivide(int subdivisionLevel);
 
   inline Mesh* getBaseMesh() { return baseMesh; }

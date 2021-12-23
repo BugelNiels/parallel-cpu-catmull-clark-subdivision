@@ -10,6 +10,29 @@ Subdivider::Subdivider(Mesh* mesh) {
   currentMesh = baseMesh;
 }
 
+double Subdivider::subdivide(int subdivisionLevel, int iterations) {
+  double totalTime = 0;
+  for (int i = 0; i < iterations; ++i) {
+    currentMesh = baseMesh;
+    QElapsedTimer timer;
+    timer.start();
+    for (unsigned short k = 0; k < subdivisionLevel; k++) {
+      QuadMesh* newMesh = new QuadMesh();
+      currentMesh->subdivideCatmullClark(*newMesh);
+      if (currentMesh != baseMesh) {
+        delete currentMesh;
+      }
+      currentMesh = newMesh;
+    }
+    long long time = timer.nsecsElapsed();
+    totalTime += time / 1000000.0;
+  }
+  double avgTime = totalTime / iterations;
+  std::cout << "\n---\nAverage time elapsed for " << subdivisionLevel << " : "
+            << avgTime << " milliseconds\n\n";
+  return avgTime;
+}
+
 double Subdivider::subdivide(int subdivisionLevel) {
   currentMesh = baseMesh;
 
