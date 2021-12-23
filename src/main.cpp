@@ -9,6 +9,7 @@
 #include "quadmesh.h"
 #include "subdivide.h"
 
+
 /**
  * @brief getCmdOption Retrieves the string after the provided flag
  * @param begin Start of the array to be searched in
@@ -84,6 +85,8 @@ int main(int argc, char* argv[]) {
   } else {
     subdivider.subdivide(atoi(subdivLevel), atoi(numIter));
   }
+
+  test();
 
   exit(EXIT_SUCCESS);
 }

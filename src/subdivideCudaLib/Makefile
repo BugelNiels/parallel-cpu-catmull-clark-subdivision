@@ -1,6 +1,6 @@
 # --- MACROS
 # define program name
-MAIN= cudaSubdivision
+MAIN= CudaSubdivision
 
 # define the C compiler to use
 CC= nvcc
@@ -14,7 +14,7 @@ LIBNAME= -Xcompiler -fPIC -o ${MAIN}.so --shared
 LIBS= -lm
 
 # define C source files
-SRCS= subdivide.cu
+SRCS= src/subdivide.cu
 
 # define C header files
 HDRS= libheaders/subdivide.h

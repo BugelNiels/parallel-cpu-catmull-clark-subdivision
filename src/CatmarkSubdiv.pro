@@ -11,9 +11,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = CatmarkSubdiv
 TEMPLATE = app
 
-INCLUDEPATH += "$$PWD/../subdivideCudaLib/libheaders"
-LIBS+= -L"$$PWD/../subdivideCudaLib"
-
 SOURCES += main.cpp\
         mainwindow.cpp \
   meshSubdivision.cpp \
@@ -41,6 +38,9 @@ FORMS    += mainwindow.ui
 
 RESOURCES += \
     resources.qrc
+    
+INCLUDEPATH += "$$PWD/subdivideCudaLib/libheaders"
+LIBS+= -L$$PWD/subdivideCudaLib -lCudaSubdivision
 
 QMAKE_CXXFLAGS+= -fopenmp -lpthread
 QMAKE_LFLAGS +=  -fopenmp -lpthread
