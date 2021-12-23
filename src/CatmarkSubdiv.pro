@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = CatmarkSubdiv
 TEMPLATE = app
 
+INCLUDEPATH += "$$PWD/../subdivideCudaLib/libheaders"
+LIBS+= -L"$$PWD/../subdivideCudaLib"
 
 SOURCES += main.cpp\
         mainwindow.cpp \

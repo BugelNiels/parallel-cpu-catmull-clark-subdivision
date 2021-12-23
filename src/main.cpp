@@ -7,6 +7,7 @@
 #include "objfile.h"
 #include "omp.h"
 #include "quadmesh.h"
+#include "subdivide.h"
 
 /**
  * @brief getCmdOption Retrieves the string after the provided flag
