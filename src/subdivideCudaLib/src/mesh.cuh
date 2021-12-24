@@ -1,3 +1,6 @@
+#ifndef MESH_CUH
+#define MESH_CUH
+
 typedef struct Mesh {
 	// these have length numVerts
 	float* xCoords;
@@ -22,3 +25,6 @@ Mesh makeEmptyCopy(Mesh* mesh);
 Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges);
 void freeDeviceMesh(Mesh* mesh);
 void freeMesh(Mesh* mesh);
+void toObjFile(Mesh* mesh);
+
+#endif // MESH_CUH

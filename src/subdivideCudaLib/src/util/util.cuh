@@ -1,6 +1,8 @@
-#ifndef __FILEH__
-#define __FILEH__
+#ifndef UTILS_CUH
+#define UTILS_CUH
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 typedef struct {
@@ -11,8 +13,8 @@ typedef struct {
 void startTime(Timer* timer);
 void stopTime(Timer* timer);
 float elapsedTime(Timer timer);
-
-
+void printFloatArr(float* arr, int size);
+void printIntArr(int* arr, int size);
 
 #define FATAL(msg, ...)                                                      \
   do {                                                                       \
@@ -20,4 +22,5 @@ float elapsedTime(Timer timer);
     exit(-1);                                                                \
   } while (0)
 
-#endif
+
+#endif // UTILS_CUH

@@ -11,6 +11,14 @@ Subdivider::Subdivider(Mesh* mesh) {
   currentMesh = baseMesh;
 }
 
+int* copyIntArr(int* data, int size) {
+  int* arr = (int*)malloc(size * sizeof(int));
+  for(int i = 0; i < size; ++i) {
+    arr[i] = data[i];
+  }
+  return arr;
+}
+
 void Subdivider::subdivideGPU(int subdivisionLevel) {
   // makes all calls a lot shorter;
   Mesh* m = baseMesh;
@@ -24,12 +32,12 @@ void Subdivider::subdivideGPU(int subdivisionLevel) {
     zCoords[i] = c.z();
     i++;
   }
-  int* twins = m->getTwins().data();
-  int* nexts = m->getNexts().data();
-  int* prevs = m->getPrevs().data();
-  int* verts = m->getVerts().data();
-  int* edges = m->getEdges().data();
-  int* faces = m->getFaces().data();
+  int* twins = copyIntArr(m->getTwins().data(), m->getNumHalfEdges());
+  int* nexts = copyIntArr(m->getNexts().data(), m->getNumHalfEdges());
+  int* prevs = copyIntArr(m->getPrevs().data(), m->getNumHalfEdges());
+  int* verts = copyIntArr(m->getVerts().data(), m->getNumHalfEdges());
+  int* edges = copyIntArr(m->getEdges().data(), m->getNumHalfEdges());
+  int* faces = copyIntArr(m->getFaces().data(), m->getNumHalfEdges());
   double milsecs;
   milsecs = timedSubdivision(xCoords, yCoords, zCoords, m->getNumVerts(),
                              m->getNumHalfEdges(), m->getNumFaces(),

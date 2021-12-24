@@ -6,3 +6,5 @@ src/Makefile
 **/CatmarkSubdiv
 **/moc*.cpp
 **/qrc_resources.cpp
+src/.vs
+**/.vscode/
