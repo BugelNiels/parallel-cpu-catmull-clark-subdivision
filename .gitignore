@@ -8,6 +8,8 @@ src/Makefile
 **/moc*.h
 **/qrc_resources.cpp
 src/.vs
+**/.vs
 **/.vscode/
 src/ui_mainwindow.h
-src
+**/*.out
+src/subdivideCudaLib/subdivide
