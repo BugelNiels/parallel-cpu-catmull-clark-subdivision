@@ -1,2 +1,2 @@
-./CatmarkSubdiv -c -f "models/bigguy.obj" -gpu -l 5 
+./CatmarkSubdiv -c -f "models/bigguy.obj" -gpu -l 2 
 

@@ -5,6 +5,9 @@ build-*/
 src/Makefile
 **/CatmarkSubdiv
 **/moc*.cpp
+**/moc*.h
 **/qrc_resources.cpp
 src/.vs
 **/.vscode/
+src/ui_mainwindow.h
+src

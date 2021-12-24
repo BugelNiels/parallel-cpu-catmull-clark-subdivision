@@ -4,7 +4,6 @@
 
 #include "stdio.h"
 
-#define BLOCK_SIZE 64
 
 // swaps pointers
 void meshSwap(Mesh **prevMeshPtr, Mesh **newMeshPtr) {
@@ -32,14 +31,18 @@ void performSubdivision(Mesh input, Mesh output, int subdivisionLevel) {
 
   printf("Starting subdivision.."); fflush(stdout);
   startTime(&timer);
+  
+  // if faces are set, means it is not a quad mesh, hence do one separate step with kernels
+  quadRefineEdgesAndCalcFacePoints<<<dim_grid, dim_block>>>(*in, *out);
 
-  for (int d = 0; d < subdivisionLevel; d++) {
-    quadRefineEdgesAndCalcFacePoints<<<dim_grid, dim_block>>>(*in, *out);
-    quadEdgePoints<<<dim_grid, dim_block>>>(*in, *out);
-    quadVertexPoints<<<dim_grid, dim_block>>>(*in, *out);
-    meshSwap(&in, &out);
-  }
+  // for (int d = 0; d < subdivisionLevel; d++) {
+  //   quadRefineEdgesAndCalcFacePoints<<<dim_grid, dim_block>>>(*in, *out);
+  //   quadEdgePoints<<<dim_grid, dim_block>>>(*in, *out);
+  //   quadVertexPoints<<<dim_grid, dim_block>>>(*in, *out);
+  //   meshSwap(&in, &out);
+  // }
   cuda_ret = cudaDeviceSynchronize();
+  cudaErrCheck(cuda_ret, "Unable to execute kernel");
 
   stopTime(&timer); printf("%f s\n", elapsedTime(timer));
 

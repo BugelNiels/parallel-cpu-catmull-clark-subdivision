@@ -39,11 +39,15 @@ void Subdivider::subdivideGPU(int subdivisionLevel) {
   int* edges = copyIntArr(m->getEdges().data(), m->getNumHalfEdges());
   int* faces = copyIntArr(m->getFaces().data(), m->getNumHalfEdges());
   double milsecs;
-  milsecs = timedSubdivision(xCoords, yCoords, zCoords, m->getNumVerts(),
+  // meshSubdivision(xCoords, yCoords, zCoords, m->getNumVerts(),
+  //                            m->getNumHalfEdges(), m->getNumFaces(),
+  //                            m->getNumEdges(), twins, nexts, prevs, verts,
+  //                            edges, faces, subdivisionLevel);
+  quadMeshSubdivision(xCoords, yCoords, zCoords, m->getNumVerts(),
                              m->getNumHalfEdges(), m->getNumFaces(),
-                             m->getNumEdges(), twins, nexts, prevs, verts,
-                             edges, faces, subdivisionLevel);
-  std::cout << milsecs;
+                             m->getNumEdges(), twins, verts,
+                             edges, subdivisionLevel);
+  // TODO: if base mesh is quad mesh, call quadMeshSubdivision
 }
 
 double Subdivider::subdivide(int subdivisionLevel, int iterations) {

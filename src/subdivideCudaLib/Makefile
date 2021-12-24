@@ -6,7 +6,7 @@ MAIN= libCudaSubdivision
 CC= nvcc
 
 # define any compile-time flags
-CFLAGS= -O3 -pg -rdc=true 
+CFLAGS= -O3 -pg -rdc=true -g -G
 
 LIBNAME= -Xcompiler -fPIC -o ${MAIN}.so --shared 
 

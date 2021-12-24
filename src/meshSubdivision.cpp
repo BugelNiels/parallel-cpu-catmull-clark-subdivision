@@ -75,7 +75,7 @@ void Mesh::edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed) {
   int ht = twin(h);
   mesh.twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
   mesh.twins[4 * h + 1] = 4 * next(h) + 2;
-  mesh.twins[4 * h + 2] = 4 * prev(h) + 1;
+  mesh.twins[4 * h + 2] = 4 * hp + 1;
   mesh.twins[4 * h + 3] = 4 * twin(hp);
 
   mesh.verts[4 * h] = vert(h);
