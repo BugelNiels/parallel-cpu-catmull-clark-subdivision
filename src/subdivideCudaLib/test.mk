@@ -13,10 +13,10 @@ LIBS= -lm
 
 # define C source files
 # TODO: use wildcards
-SRCS= src/main.cu ${wildcard src/**/*.cu}
+SRCS= ${wildcard src/*.cu} ${wildcard src/**/*.cu}
 
 # define C header files
-HDRS= libheaders/subdivide.h ${wildcard src/**/*.cuh}
+HDRS= libheaders/subdivide.h ${wildcard src/*.cuh} ${wildcard src/**/*.cuh}
 
 # --- TARGETS
 all: ${MAIN}

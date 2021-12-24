@@ -2,6 +2,7 @@
 
 #include "mesh/mesh.cuh"
 #include "util/util.cuh"
+#include "stdio.h"
 #include "cudaSubdivision.cuh"
 
 
