@@ -53,6 +53,10 @@ void copyHostDevice(Mesh* from, Mesh* to, cudaMemcpyKind direction, int isQuad) 
 	cudaError_t cuda_ret;
 
     int m = from->numVerts;
+    if(m == 0) {
+        printf("Source mesh coords are empty"); 
+        return;
+    }
 	cuda_ret = cudaMemcpy(to->xCoords, from->xCoords, m * sizeof(float), direction);
     cudaErrCheck(cuda_ret, "Unable to copy x-coordinates to the device");
 	cuda_ret = cudaMemcpy(to->yCoords, from->yCoords, m * sizeof(float), direction);
@@ -61,6 +65,10 @@ void copyHostDevice(Mesh* from, Mesh* to, cudaMemcpyKind direction, int isQuad) 
     cudaErrCheck(cuda_ret, "Unable to copy z-coordinates to the device");
 
 	int n = from->numHalfEdges;
+    if(n == 0) {
+        printf("Source mesh properties are empty"); 
+        return;
+    }
 	cuda_ret = cudaMemcpy(to->twins, from->twins, n * sizeof(int), direction);
     cudaErrCheck(cuda_ret, "Unable to copy twins to the device");
 	cuda_ret = cudaMemcpy(to->verts, from->verts, n * sizeof(int), direction);
@@ -99,6 +107,10 @@ void copyDeviceMeshToHostMesh(Mesh* hostMesh, Mesh* deviceMesh) {
 
 	// copy all data from gpu to host mesh
     copyHostDevice(deviceMesh, hostMesh, cudaMemcpyDeviceToHost, 1);
+    hostMesh->numEdges = deviceMesh->numEdges;
+    hostMesh->numFaces = deviceMesh->numFaces;
+    hostMesh->numHalfEdges = deviceMesh->numHalfEdges;
+    hostMesh->numVerts = deviceMesh->numVerts;
 
 	stopTime(&timer); printf(" %f s\n", elapsedTime(timer));
 }

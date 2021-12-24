@@ -43,6 +43,8 @@ void cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
 	copyDeviceMeshToHostMesh(mesh, &out);
 	
 	cudaDeviceSynchronize();
+	
+	toObjFile(mesh);
 
 	freeDeviceMesh(&in);
 	freeDeviceMesh(&out);

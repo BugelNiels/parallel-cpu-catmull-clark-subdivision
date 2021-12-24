@@ -17,6 +17,7 @@ typedef struct ObjFile {
   	int numFaces;
   	int numVerts;
 
+	int isQuad;
 } ObjFile;
 
 ObjFile readObjFromFile(char const* objFileName);

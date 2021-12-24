@@ -27,30 +27,32 @@ void setEdgeAndTwins(Mesh* mesh, int h, int vertIdx2, List* edgeList) {
   }
 }
 
-void addHalfEdge(Mesh* mesh, int h, int faceIdx, int* faceIndices, int i, int valency, List* edgeList) {
+void addHalfEdge(Mesh* mesh, int h, int faceIdx, int* faceIndices, int i, int valency, List* edgeList, int isQuad) {
   // vert
   int vertIdx = faceIndices[i];
-  mesh->verts[h] = vertIdx;
-
-  // prev and next
-  int prev = h - 1;
-  int next = h + 1;
-  if (i == 0) {
-    // prev = h - 1 + faceValency
-    prev += valency;
-  } else if (i == valency - 1) {
-    // next = h + 1 - faceValency
-    next -= valency;
-  }
-  mesh->prevs[h] = prev;
-  mesh->nexts[h] = next;
+  mesh->verts[h] = vertIdx; 
 
   // twin
+  mesh->twins[h] = -1;
   int nextVertIdx = faceIndices[(i + 1) % valency];
   setEdgeAndTwins(mesh, h, nextVertIdx, edgeList);
 
-  // face
-  mesh->faces[h] = faceIdx;
+  if(isQuad == 0) {
+    // prev and next
+    int prev = h - 1;
+    int next = h + 1;
+    if (i == 0) {
+      // prev = h - 1 + faceValency
+      prev += valency;
+    } else if (i == valency - 1) {
+      // next = h + 1 - faceValency
+      next -= valency;
+    }
+    mesh->prevs[h] = prev;
+    mesh->nexts[h] = next;
+    // face
+    mesh->faces[h] = faceIdx;
+  }  
 }
 
 
@@ -73,12 +75,14 @@ Mesh meshFromObjFile(ObjFile obj) {
     memcpy(mesh.zCoords, obj.zCoords, mesh.numVerts * sizeof(float));
 
     mesh.twins = (int*)malloc(numHalfEdges * sizeof(int));
-    mesh.nexts = (int*)malloc(numHalfEdges * sizeof(int));
-    mesh.prevs = (int*)malloc(numHalfEdges * sizeof(int));
     mesh.verts = (int*)malloc(numHalfEdges * sizeof(int));
     mesh.edges = (int*)malloc(numHalfEdges * sizeof(int));
-    mesh.faces = (int*)malloc(numHalfEdges * sizeof(int));
 
+    if(obj.isQuad == 0) { 
+      mesh.nexts = (int*)malloc(numHalfEdges * sizeof(int));
+      mesh.prevs = (int*)malloc(numHalfEdges * sizeof(int));
+      mesh.faces = (int*)malloc(numHalfEdges * sizeof(int));
+    }
     int h = 0;
     List edgeList = initEmptyList();
     // loop over every face
@@ -88,7 +92,7 @@ Mesh meshFromObjFile(ObjFile obj) {
         // faces
         int valency = obj.faceValencies[faceIdx];
         for (int i = 0; i < valency; ++i) {
-            addHalfEdge(&mesh, h, faceIdx, faceIndices, i, valency, &edgeList);
+            addHalfEdge(&mesh, h, faceIdx, faceIndices, i, valency, &edgeList, obj.isQuad);
             h++;
         }
     }

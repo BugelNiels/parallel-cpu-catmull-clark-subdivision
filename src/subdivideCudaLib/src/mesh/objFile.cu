@@ -31,6 +31,7 @@ ObjFile readObjFromFile(char const* objFileName) {
     size_t len = 0;
 
     ObjFile obj;
+    obj.isQuad = 1;
     obj.numVerts = 0;
     obj.numFaces = 0;
     char *token;
@@ -78,12 +79,17 @@ ObjFile readObjFromFile(char const* objFileName) {
                 i++;
             }
             obj.faceIndices[f] = indices;
+            if(i != 4) {
+                obj.isQuad = 0;
+            }
             obj.faceValencies[f] = i;
             f++;
         }
     }
+    if(obj.isQuad == 1) {
+        printf("Loaded quad mesh.\n");
+    }
     fclose(objFile);
-    printObjFile(obj);
     return obj;
 }
 
