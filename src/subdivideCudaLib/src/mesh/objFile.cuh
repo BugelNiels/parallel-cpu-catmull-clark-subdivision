@@ -20,5 +20,6 @@ typedef struct ObjFile {
 } ObjFile;
 
 ObjFile readObjFromFile(char const* objFileName);
+void freeObjFile(ObjFile objFile);
 
 #endif // OBJ_FILE_CUH

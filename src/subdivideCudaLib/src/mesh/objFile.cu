@@ -74,7 +74,7 @@ ObjFile readObjFromFile(char const* objFileName) {
                     currentSize *= 2;
                     indices = (int*)realloc(indices, currentSize);
                 }
-                indices[i] = atoi(token);
+                indices[i] = atoi(token) - 1;
                 i++;
             }
             obj.faceIndices[f] = indices;
@@ -85,4 +85,17 @@ ObjFile readObjFromFile(char const* objFileName) {
     fclose(objFile);
     printObjFile(obj);
     return obj;
+}
+
+void freeObjFile(ObjFile objFile) {
+
+    free(objFile.xCoords);
+    free(objFile.yCoords);
+    free(objFile.zCoords);
+
+    for(int f = 0; f < objFile.numFaces; f++) {
+        free(objFile.faceIndices[f]);
+    }
+    free(objFile.faceIndices);
+    free(objFile.faceValencies);
 }

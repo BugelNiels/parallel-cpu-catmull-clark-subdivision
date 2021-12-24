@@ -50,7 +50,7 @@ void freeMesh(Mesh* mesh) {
 
 void toObjFile(Mesh* mesh) {
     // TODO: add name of object file
-    FILE *objFile = fopen("results/subdivisionResult.obj", "w");
+    FILE *objFile = fopen("subdivisionResult.obj", "w");
     if (objFile == NULL)
     {
         printf("Error opening or creating .obj file!\n");
