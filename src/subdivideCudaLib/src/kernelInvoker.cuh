@@ -3,6 +3,6 @@
 
 #include "mesh/mesh.cuh"
 
-void performSubdivision(Mesh in, Mesh out, int subdivisionLevel);
+Mesh performSubdivision(Mesh in, Mesh out, int subdivisionLevel, int h0);
 
 #endif // KERNEL_INVOKER_CUH

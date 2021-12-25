@@ -37,3 +37,12 @@ void printIntArr(int* arr, int size) {
     }
     printf("%d\n\n", arr[size - 1]);
 }
+
+int indexOfArr(int* arr, int size, int item) {
+    for(int i = 0; i < size; i++) {
+        if(arr[i] == item) {
+            return i;
+        }
+    }
+    return -1;
+}

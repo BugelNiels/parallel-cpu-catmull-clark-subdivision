@@ -15,6 +15,7 @@ void stopTime(Timer* timer);
 float elapsedTime(Timer timer);
 void printFloatArr(float* arr, int size);
 void printIntArr(int* arr, int size);
+int indexOfArr(int* arr, int size, int item);
 
 #define FATAL(msg, ...)                                                      \
   do {                                                                       \

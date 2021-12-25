@@ -4,12 +4,7 @@
 #include "mesh.cuh"
 
 Mesh makeEmptyCopy(Mesh* mesh) {
-	Mesh copy;
-	copy.numVerts = mesh->numVerts;
-	copy.numHalfEdges = mesh->numHalfEdges;
-	copy.numEdges = mesh->numEdges;
-	copy.numFaces = mesh->numFaces;
-	return copy;
+    return initMesh(mesh->numVerts, mesh->numHalfEdges, mesh->numFaces, mesh->numEdges);
 }
 
 Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges) {
@@ -21,6 +16,9 @@ Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges) {
     mesh.nexts = NULL;
     mesh.prevs = NULL;
     mesh.faces = NULL;
+    mesh.twins = NULL;
+    mesh.edges = NULL;
+    mesh.verts = NULL;
 	return mesh;
 } 
 
@@ -50,7 +48,7 @@ void freeMesh(Mesh* mesh) {
 
 void toObjFile(Mesh* mesh) {
     // TODO: add name of object file
-    FILE *objFile = fopen("subdivisionResult.obj", "w");
+    FILE *objFile = fopen("result.obj", "w");
     if (objFile == NULL)
     {
         printf("Error opening or creating .obj file!\n");

@@ -12,39 +12,39 @@ __device__ int face(int h) { return h / 4; }
 
 
 // TODO: change to pointers?
-__device__ void edgeRefinement(int h, Mesh in, Mesh out) {
+__device__ void edgeRefinement(int h, Mesh* in, Mesh* out) {
 
     int hp = prev(h);
-    int he = in.edges[h];
+    int he = in->edges[h];
 
-    int vd = in.numVerts;
-    int fd = in.numFaces;
-    int ed = in.numEdges;
+    int vd = in->numVerts;
+    int fd = in->numFaces;
+    int ed = in->numEdges;
 
     // For boundaries
-    int ht = in.twins[h];
-    int thp = in.twins[hp];
-    int ehp = in.edges[hp];
+    int ht = in->twins[h];
+    int thp = in->twins[hp];
+    int ehp = in->edges[hp];
     // TODO: check interleave
-    out.twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
-    out.twins[4 * h + 1] = 4 * next(h) + 2;
-    out.twins[4 * h + 2] = 4 * hp + 1;
-    out.twins[4 * h + 3] = 4 * thp;
+    out->twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
+    out->twins[4 * h + 1] = 4 * next(h) + 2;
+    out->twins[4 * h + 2] = 4 * hp + 1;
+    out->twins[4 * h + 3] = 4 * thp;
 
 
-    out.verts[4 * h] = in.verts[h];
-    out.verts[4 * h + 1] = vd + fd + he;
-    out.verts[4 * h + 2] = vd + face(h);
-    out.verts[4 * h + 3] = vd + fd + ehp;
+    out->verts[4 * h] = in->verts[h];
+    out->verts[4 * h + 1] = vd + fd + he;
+    out->verts[4 * h + 2] = vd + face(h);
+    out->verts[4 * h + 3] = vd + fd + ehp;
 
-    out.edges[4 * h] = h > ht ? 2 * he : 2 * he + 1;
-    out.edges[4 * h + 1] = 2 * ed + h;
-    out.edges[4 * h + 2] = 2 * ed + hp;
-    out.edges[4 * h + 3] = hp > thp ? 2 * ehp + 1 : 2 * ehp;
+    out->edges[4 * h] = h > ht ? 2 * he : 2 * he + 1;
+    out->edges[4 * h + 1] = 2 * ed + h;
+    out->edges[4 * h + 2] = 2 * ed + hp;
+    out->edges[4 * h + 3] = hp > thp ? 2 * ehp + 1 : 2 * ehp;
 }
 
-__device__ int valence(int h, Mesh in) {
-  int ht = in.twins[h];
+__device__ int valence(int h, Mesh* in) {
+  int ht = in->twins[h];
   if (ht < 0) {
     return -1;
   }
@@ -55,7 +55,7 @@ __device__ int valence(int h, Mesh in) {
     if (hp < 0) {
       return -1;
     }
-    ht = in.twins[hp];
+    ht = in->twins[hp];
     if (ht < 0) {
       return -1;
     }
@@ -65,21 +65,21 @@ __device__ int valence(int h, Mesh in) {
   return n;
 }
 
-__device__ void facePoint(int h, Mesh in, Mesh out, float* vertCoordsX, float* vertCoordsY, float* vertCoordsZ) {
-    int v = in.verts[h];
-    int i = in.numVerts + in.faces[h];
+__device__ void facePoint(int h, Mesh* in, Mesh* out, float* vertCoordsX, float* vertCoordsY, float* vertCoordsZ) {
+    int v = in->verts[h];
+    int i = in->numVerts + face(h);
     int ti = i % BLOCK_SIZE;
-    vertCoordsX[ti] += in.xCoords[v];
-    vertCoordsY[ti] += in.yCoords[v];
-    vertCoordsZ[ti] += in.zCoords[v];
+    vertCoordsX[ti] += in->xCoords[v];
+    vertCoordsY[ti] += in->yCoords[v];
+    vertCoordsZ[ti] += in->zCoords[v];
 
     __syncthreads();
 
     int fi = threadIdx.x % 4;
     if(fi == 0) {
-        out.xCoords[i] = vertCoordsX[ti] / 4.0f;
-        out.yCoords[i] = vertCoordsY[ti] / 4.0f;
-        out.zCoords[i] = vertCoordsZ[ti] / 4.0f;
+        out->xCoords[i] = vertCoordsX[ti] / 4.0f;
+        out->yCoords[i] = vertCoordsY[ti] / 4.0f;
+        out->zCoords[i] = vertCoordsZ[ti] / 4.0f;
     } 
 }
 
@@ -107,9 +107,9 @@ __global__ void quadRefineEdgesAndCalcFacePoints(Mesh in, Mesh out) {
     int h = blockIdx.x * blockDim.x + threadIdx.x;
 
     if(h < in.numHalfEdges) {
-        edgeRefinement(h, in, out);
+        edgeRefinement(h, &in, &out);
         // TODO: try separating out into separate kernel with smaller grid size
-        facePoint(h, in, out, vertCoordsX, vertCoordsY, vertCoordsZ);
+        facePoint(h, &in, &out, vertCoordsX, vertCoordsY, vertCoordsZ);
     }
     if(blockIdx.x == 0 && threadIdx.x == 0) {
         // TODO: each statement by different thread? (with offset WARP_SIZE)
@@ -153,7 +153,7 @@ __global__ void quadVertexPoints(Mesh in, Mesh out) {
     if(h >= in.numHalfEdges) {
         return;
     }
-    float n = valence(h, in);
+    float n = valence(h, &in);
     int v = in.verts[h];
 
     float x = in.xCoords[v];

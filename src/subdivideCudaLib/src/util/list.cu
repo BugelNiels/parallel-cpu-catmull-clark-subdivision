@@ -1,6 +1,7 @@
 #include "list.cuh"
 
 #include "stdlib.h"
+#include "util.cuh"
 
 List initEmptyList() {
     List list;
@@ -20,12 +21,7 @@ void append(List* list, int item) {
 }
 
 int indexOf(List* list, int item) {
-    for(int k = 0; k < list->i; k++) {
-        if(list->arr[k] == item) {
-            return k;
-        }
-    }
-    return -1;
+    return indexOfArr(list->arr, list->i, item);
 }
 
 int listSize(List* list) {

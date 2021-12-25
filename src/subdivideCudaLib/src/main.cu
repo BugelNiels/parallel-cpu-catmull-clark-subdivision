@@ -9,6 +9,6 @@ int main(int argc, char *argv[]) {
     ObjFile objFile = readObjFromFile("../models/OpenCube.obj");
     Mesh mesh = meshFromObjFile(objFile);
     freeObjFile(objFile);
-	cudaSubdivide(&mesh, 3);
-    // toObjFile(&mesh);
+	cudaSubdivide(&mesh, 1);
+    toObjFile(&mesh);
 }

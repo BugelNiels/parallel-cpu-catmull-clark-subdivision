@@ -12,39 +12,50 @@ void meshSwap(Mesh **prevMeshPtr, Mesh **newMeshPtr) {
   *newMeshPtr = temp;
 }
 
-void performSubdivision(Mesh input, Mesh output, int subdivisionLevel) {
+
+
+Mesh performSubdivision(Mesh input, Mesh output, int subdivisionLevel, int h0) {
   cudaError_t cuda_ret;
   Timer timer;
 
   // device must be synced before this point
 
+  // swap these two, so that the initial mesh swap puts them right
   Mesh* in = &input;
   Mesh* out = &output;
 
   dim3 dim_grid, dim_block;
 
   // TODO: calculate
+  // each thread takes 1 half edge
   dim_block.x = BLOCK_SIZE;
   dim_block.y = dim_block.z = 1;
-  dim_grid.x = BLOCK_SIZE;
   dim_grid.y = dim_grid.z = 1;
 
-  printf("Starting subdivision.."); fflush(stdout);
+  printf("Performing subdivision..\n"); fflush(stdout);
   startTime(&timer);
   
   // if faces are set, means it is not a quad mesh, hence do one separate step with kernels
   // quadRefineEdgesAndCalcFacePoints<<<dim_grid, dim_block>>>(*in, *out);
 
   for (int d = 0; d < subdivisionLevel; d++) {
+    // number of half edges at this level
+    int he = pow(4, d) * h0;
+    // TODO: take care of max grid size
+    dim_grid.x = (he - 1) / BLOCK_SIZE + 1;
+    printf("Num half edges to cover: %d -- Grid size: %d\n", he, dim_grid.x);
     quadRefineEdgesAndCalcFacePoints<<<dim_grid, dim_block>>>(*in, *out);
     quadEdgePoints<<<dim_grid, dim_block>>>(*in, *out);
     quadVertexPoints<<<dim_grid, dim_block>>>(*in, *out);
+    // result is in out; after this swap, the result is in in
     meshSwap(&in, &out);
   }
+
   cuda_ret = cudaDeviceSynchronize();
   cudaErrCheck(cuda_ret, "Unable to execute kernel");
 
-  stopTime(&timer); printf("%f s\n", elapsedTime(timer));
-
+  stopTime(&timer); printf("Kernel execution took: %f s\n\n", elapsedTime(timer));
+  printf("Final mesh: %d %d %d\n\n", out->numHalfEdges, out->numFaces, out->numVerts);
+  return *in;
   
 }
