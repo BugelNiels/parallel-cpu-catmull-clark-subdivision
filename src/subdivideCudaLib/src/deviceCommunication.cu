@@ -57,6 +57,8 @@ void reallocHostMemory(Mesh* hostMesh, DeviceMesh* deviceMesh) {
     hostMesh->numHalfEdges = getDeviceVal(&deviceMesh->numHalfEdges);
     hostMesh->numVerts = getDeviceVal(&deviceMesh->numVerts);
 
+    printf("%d %d %d %d\n", hostMesh->numVerts, hostMesh->numHalfEdges, hostMesh->numFaces, hostMesh->numEdges);
+
     hostMesh->xCoords = (float*)realloc(hostMesh->xCoords, hostMesh->numVerts);
     hostMesh->yCoords = (float*)realloc(hostMesh->yCoords, hostMesh->numVerts);
     hostMesh->zCoords = (float*)realloc(hostMesh->zCoords, hostMesh->numVerts);
@@ -92,7 +94,7 @@ void copyHostToDeviceMesh(Mesh* from, DeviceMesh* to, int isQuad) {
         printf("Source mesh properties are empty"); 
         return;
     }
-    printf("    Copying %d: %d bytes\n", n, n * sizeof(float));
+    printf("    Copying %d: %d bytes\n", n, n * sizeof(int));
 	cuda_ret = cudaMemcpy(to->twins, from->twins, n * sizeof(int), cudaMemcpyHostToDevice);
     cudaErrCheck(cuda_ret, "Unable to copy twins to the device");
 	cuda_ret = cudaMemcpy(to->verts, from->verts, n * sizeof(int), cudaMemcpyHostToDevice);
@@ -139,13 +141,15 @@ void copyDeviceMeshToHostMesh(Mesh* to, DeviceMesh* from) {
         printf("Source mesh properties are empty"); 
         return;
     }
-    printf("    Copying %d: %d bytes\n", n, n * sizeof(float));
+    // these arrays overlap
+    printIntArr(to->verts, n);
 	cuda_ret = cudaMemcpy(to->twins, from->twins, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy twins from the device");
 	cuda_ret = cudaMemcpy(to->verts, from->verts, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy verts from the device");
 	cuda_ret = cudaMemcpy(to->edges, from->edges, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy edges from the device");
+    printIntArr(to->verts, n);
  
 
 	stopTime(&timer); printf("Copy to host took: %f s\n\n", elapsedTime(timer));

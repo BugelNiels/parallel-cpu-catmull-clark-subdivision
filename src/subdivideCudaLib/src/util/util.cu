@@ -33,7 +33,7 @@ void printIntArr(int* arr, int size) {
         return;
     }
     for(int i = 0; i < size - 1; i++) {
-        printf("%d, ", arr[i]);
+        printf("%d ", arr[i]);
     }
     printf("%d\n\n", arr[size - 1]);
 }

@@ -47,6 +47,7 @@ void freeMesh(Mesh* mesh) {
 }
 
 void toObjFile(Mesh* mesh) {
+    printf("Writing mesh to file..\n");
     // TODO: add name of object file
     FILE *objFile = fopen("result.obj", "w");
     if (objFile == NULL)
