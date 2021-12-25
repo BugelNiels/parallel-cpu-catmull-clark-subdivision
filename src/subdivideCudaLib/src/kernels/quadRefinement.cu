@@ -12,14 +12,14 @@ __device__ int face(int h) { return h / 4; }
 
 
 // TODO: change to pointers?
-__device__ void edgeRefinement(int h, Mesh* in, Mesh* out) {
+__device__ void edgeRefinement(int h, DeviceMesh* in, DeviceMesh* out) {
 
     int hp = prev(h);
     int he = in->edges[h];
 
-    int vd = in->numVerts;
-    int fd = in->numFaces;
-    int ed = in->numEdges;
+    int vd = *in->numVerts;
+    int fd = *in->numFaces;
+    int ed = *in->numEdges;
 
     // For boundaries
     int ht = in->twins[h];
@@ -43,7 +43,7 @@ __device__ void edgeRefinement(int h, Mesh* in, Mesh* out) {
     out->edges[4 * h + 3] = hp > thp ? 2 * ehp + 1 : 2 * ehp;
 }
 
-__device__ int valence(int h, Mesh* in) {
+__device__ int valence(int h, DeviceMesh* in) {
   int ht = in->twins[h];
   if (ht < 0) {
     return -1;
@@ -65,9 +65,9 @@ __device__ int valence(int h, Mesh* in) {
   return n;
 }
 
-__device__ void facePoint(int h, Mesh* in, Mesh* out, float* vertCoordsX, float* vertCoordsY, float* vertCoordsZ) {
+__device__ void facePoint(int h, DeviceMesh* in, DeviceMesh* out, float* vertCoordsX, float* vertCoordsY, float* vertCoordsZ) {
     int v = in->verts[h];
-    int i = in->numVerts + face(h);
+    int i = *in->numVerts + face(h);
     int ti = i % BLOCK_SIZE;
     vertCoordsX[ti] += in->xCoords[v];
     vertCoordsY[ti] += in->yCoords[v];
@@ -83,7 +83,7 @@ __device__ void facePoint(int h, Mesh* in, Mesh* out, float* vertCoordsX, float*
     } 
 }
 
-__global__ void quadRefineEdgesAndCalcFacePoints(Mesh in, Mesh out) {
+__global__ void quadRefineEdgesAndCalcFacePoints(DeviceMesh in, DeviceMesh out) {
 
     __shared__ float vertCoordsX[BLOCK_SIZE];
     __shared__ float vertCoordsY[BLOCK_SIZE];
@@ -95,10 +95,10 @@ __global__ void quadRefineEdgesAndCalcFacePoints(Mesh in, Mesh out) {
     // probably redundent
     __syncthreads();
 
-    int numEdges = 2 * in.numEdges + in.numHalfEdges;
-    int numFaces = in.numHalfEdges;
-    int numHalfEdges = in.numHalfEdges * 4;
-    int numVerts = in.numVerts + in.numFaces + in.numEdges;
+    int numEdges = 2 * *in.numEdges + *in.numHalfEdges;
+    int numFaces = *in.numHalfEdges;
+    int numHalfEdges = *in.numHalfEdges * 4;
+    int numVerts = *in.numVerts + *in.numFaces + *in.numEdges;
 
     // TODO: check that h does not go out of bounds.
     // TODO 2: loop
@@ -106,26 +106,26 @@ __global__ void quadRefineEdgesAndCalcFacePoints(Mesh in, Mesh out) {
     // half edge index
     int h = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if(h < in.numHalfEdges) {
+    if(h < *in.numHalfEdges) {
         edgeRefinement(h, &in, &out);
         // TODO: try separating out into separate kernel with smaller grid size
         facePoint(h, &in, &out, vertCoordsX, vertCoordsY, vertCoordsZ);
     }
     if(blockIdx.x == 0 && threadIdx.x == 0) {
         // TODO: each statement by different thread? (with offset WARP_SIZE)
-        out.numEdges = numEdges;
-        out.numFaces = numFaces;
-        out.numHalfEdges = numHalfEdges;
-        out.numVerts = numVerts;
+        *out.numEdges = numEdges;
+        *out.numFaces = numFaces;
+        *out.numHalfEdges = numHalfEdges;
+        *out.numVerts = numVerts;
     }
 }
-__global__ void quadEdgePoints(Mesh in, Mesh out) {
+__global__ void quadEdgePoints(DeviceMesh in, DeviceMesh out) {
     int h = blockIdx.x * blockDim.x + threadIdx.x;
-    if(h >= in.numHalfEdges) {
+    if(h >= *in.numHalfEdges) {
         return;
     }
-    int vd = in.numVerts;
-    int fd = in.numFaces;
+    int vd = *in.numVerts;
+    int fd = *in.numFaces;
     int v = in.verts[h];
     int j = vd + fd + in.edges[h];
 
@@ -134,7 +134,7 @@ __global__ void quadEdgePoints(Mesh in, Mesh out) {
     int i = th < 0 ? in.verts[next(h)] : vd + face(h) ;
     int divisor = th < 0 ? 2.0f : 4.0f;
 
-    Mesh* m = th < 0 ? &in : &out;
+    DeviceMesh* m = th < 0 ? &in : &out;
 
     float x = (m->xCoords[v] + in.xCoords[i]) / divisor;
     float y = (m->yCoords[v] + in.yCoords[i]) / divisor;
@@ -147,10 +147,10 @@ __global__ void quadEdgePoints(Mesh in, Mesh out) {
     atomicAdd(&out.zCoords[j], z);
     
 }
-__global__ void quadVertexPoints(Mesh in, Mesh out) {
+__global__ void quadVertexPoints(DeviceMesh in, DeviceMesh out) {
     // shared memory?
     int h = blockIdx.x * blockDim.x + threadIdx.x;
-    if(h >= in.numHalfEdges) {
+    if(h >= *in.numHalfEdges) {
         return;
     }
     float n = valence(h, &in);
@@ -160,9 +160,9 @@ __global__ void quadVertexPoints(Mesh in, Mesh out) {
     float y = in.yCoords[v];
     float z = in.zCoords[v];
     if(n >= 0) {
-        int vd = in.numVerts;
+        int vd = *in.numVerts;
         int i = vd + face(h);
-        int j = vd + in.numFaces + in.edges[h];
+        int j = vd + *in.numFaces + in.edges[h];
         float n2 = n * n;
         x = (4 * out.xCoords[j] - out.xCoords[i] + (n - 3) * x) / n2;
         y = (4 * out.yCoords[j] - out.yCoords[i] + (n - 3) * x) / n2;
@@ -171,4 +171,13 @@ __global__ void quadVertexPoints(Mesh in, Mesh out) {
     atomicAdd(&out.xCoords[v], x);
     atomicAdd(&out.yCoords[v], y);
     atomicAdd(&out.zCoords[v], z);
+}
+
+__global__ void debugKernel(DeviceMesh in) {
+    if(blockIdx.x == 0 && threadIdx.x == 0) {
+        // printf("%d %d %d %d\n", in.numHalfEdges, in.numVerts, in.numFaces, in.numEdges);
+        printf("%d %d %d %d\n", *in.numVerts, *in.numHalfEdges, *in.numFaces, *in.numEdges);
+        // printf("%d\n", in.numVerts);
+        // printf("%d\n", *in.numVerts);
+    }
 }

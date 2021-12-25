@@ -2,10 +2,11 @@
 #define DEVICE_COMMUNICATION_CUH
 
 #include "mesh/mesh.cuh"
+#include "mesh/deviceMesh.cuh"
 
-void allocateDeviceMemory(Mesh* deviceMesh, int m, int n, int n0, int isQuad);
-void reallocHostMemory(Mesh* hostMesh, Mesh* deviceMesh);
-void copyHostToDeviceMesh(Mesh* hostMesh, Mesh* deviceMesh, int isQuad);
-void copyDeviceMeshToHostMesh(Mesh* hostMesh, Mesh* deviceMesh);
+void allocateDeviceMemory(DeviceMesh* deviceMesh, int m, int n, int n0, int isQuad);
+void reallocHostMemory(Mesh* hostMesh, DeviceMesh* deviceMesh);
+void copyHostToDeviceMesh(Mesh* hostMesh, DeviceMesh* deviceMesh, int isQuad);
+void copyDeviceMeshToHostMesh(Mesh* hostMesh, DeviceMesh* deviceMesh);
 
 #endif // DEVICE_COMMUNICATION_CUH

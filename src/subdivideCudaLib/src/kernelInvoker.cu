@@ -3,26 +3,30 @@
 #include "util/util.cuh"
 
 #include "stdio.h"
+#include "math.h"
 
 
 // swaps pointers
-void meshSwap(Mesh **prevMeshPtr, Mesh **newMeshPtr) {
-  Mesh *temp = *prevMeshPtr;
+void meshSwap(DeviceMesh **prevMeshPtr, DeviceMesh **newMeshPtr) {
+  DeviceMesh *temp = *prevMeshPtr;
   *prevMeshPtr = *newMeshPtr;
   *newMeshPtr = temp;
 }
 
 
 
-Mesh performSubdivision(Mesh input, Mesh output, int subdivisionLevel, int h0) {
+DeviceMesh performSubdivision(DeviceMesh input, DeviceMesh output, int subdivisionLevel, int h0) {
   cudaError_t cuda_ret;
   Timer timer;
 
   // device must be synced before this point
 
   // swap these two, so that the initial mesh swap puts them right
-  Mesh* in = &input;
-  Mesh* out = &output;
+
+
+
+  DeviceMesh* in = &input;
+  DeviceMesh* out = &output;
 
   dim3 dim_grid, dim_block;
 
@@ -48,6 +52,7 @@ Mesh performSubdivision(Mesh input, Mesh output, int subdivisionLevel, int h0) {
     quadEdgePoints<<<dim_grid, dim_block>>>(*in, *out);
     quadVertexPoints<<<dim_grid, dim_block>>>(*in, *out);
     // result is in out; after this swap, the result is in in
+    // debugKernel<<<dim_grid, dim_block>>>(*in);
     meshSwap(&in, &out);
   }
 
@@ -55,7 +60,6 @@ Mesh performSubdivision(Mesh input, Mesh output, int subdivisionLevel, int h0) {
   cudaErrCheck(cuda_ret, "Unable to execute kernel");
 
   stopTime(&timer); printf("Kernel execution took: %f s\n\n", elapsedTime(timer));
-  printf("Final mesh: %d %d %d\n\n", out->numHalfEdges, out->numFaces, out->numVerts);
   return *in;
   
 }
