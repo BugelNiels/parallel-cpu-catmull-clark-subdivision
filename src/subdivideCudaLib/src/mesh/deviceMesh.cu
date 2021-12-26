@@ -22,12 +22,6 @@ DeviceMesh initEmptyDeviceMesh(int numVerts, int numHalfEdges, int numFaces, int
     mesh.numHalfEdges = numHalfEdges;
     mesh.numFaces = numFaces;
     mesh.numEdges = numEdges;
-
-    printf("\n--\nCopying %d %d %d %d\n --\n", numVerts, numHalfEdges, numFaces, numEdges);
-    // setDevicePointerValue(&mesh.numVerts, numVerts);
-    // setDevicePointerValue(&mesh.numHalfEdges, numHalfEdges);
-    // setDevicePointerValue(&mesh.numFaces, numFaces);
-    // setDevicePointerValue(&mesh.numEdges, numEdges);
 	return mesh;
 } 
 

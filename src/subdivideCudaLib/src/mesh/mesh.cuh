@@ -23,7 +23,6 @@ typedef struct Mesh {
 
 Mesh makeEmptyCopy(Mesh* mesh);
 Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges);
-void freeDeviceMesh(Mesh* mesh);
 void freeMesh(Mesh* mesh);
 void toObjFile(Mesh* mesh);
 void allocQuadMesh(Mesh* mesh);

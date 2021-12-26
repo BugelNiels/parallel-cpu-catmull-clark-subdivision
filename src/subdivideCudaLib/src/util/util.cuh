@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 
+#define MIN(A, B) (A > B ? B : A)
+
 typedef struct {
     struct timeval startTime;
     struct timeval endTime;

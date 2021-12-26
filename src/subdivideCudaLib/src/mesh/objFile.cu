@@ -44,6 +44,7 @@ ObjFile readObjFromFile(char const* objFileName) {
             obj.numFaces++;        }
         // printf("%s -- %d\n", line, len);
     }
+    printf("Reading %d vertices and %d faces\n", obj.numVerts, obj.numFaces);
     rewind(objFile);
     obj.xCoords = (float*)malloc(obj.numVerts * sizeof(float));
     obj.yCoords = (float*)malloc(obj.numVerts * sizeof(float));
@@ -55,7 +56,10 @@ ObjFile readObjFromFile(char const* objFileName) {
     int v = 0;
     int f = 0;
     while (getline(&line, &len, objFile) != -1) {
-        if(line[0] == 'v') {
+        if(len <= 0) {
+            continue;
+        }
+        if(line[0] == 'v' && line[1] == ' ') {
             // remove the v
             strsep(&line, " ");
             obj.xCoords[v] = atof(strsep(&line, " "));
@@ -63,14 +67,13 @@ ObjFile readObjFromFile(char const* objFileName) {
             obj.zCoords[v] = atof(strsep(&line, " "));
             v++;
             // vertex
-        } else if(line[0] == 'f') {
+        } else if(line[0] == 'f' && line[1] == ' ') {
             // remove the f
             strsep(&line, " ");
             int currentSize = 4;
             int* indices = (int*)malloc(currentSize * sizeof(int));
             int i = 0;
-            while((token = strsep(&line, " "))) {
-                
+            while((token = strsep(&line, " "))) {                
                 if(i >= currentSize) {
                     currentSize *= 2;
                     indices = (int*)realloc(indices, currentSize);

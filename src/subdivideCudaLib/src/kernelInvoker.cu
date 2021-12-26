@@ -30,26 +30,26 @@ DeviceMesh performSubdivision(DeviceMesh* input, DeviceMesh* output, int subdivi
   dim_block.y = dim_block.z = 1;
   dim_grid.y = dim_grid.z = 1;
 
-  printf("Performing subdivision..\n"); fflush(stdout);
+  printf("\n\n------------------\nPerforming subdivision\n...\n"); fflush(stdout);
   startTime(&timer);
   
   // if faces are set, means it is not a quad mesh, hence do one separate step with kernels
   // quadRefineEdgesAndCalcFacePoints<<<dim_grid, dim_block>>>(*in, *out);
 
   for (int d = 0; d < subdivisionLevel; d++) {
-    // number of half edges at this level
+    // each thread covers 1 half edge. Number of half edges can be much greater than blockdim * gridDim. 
     int he = pow(4, d) * h0;
-    // TODO: take care of max grid size
-    dim_grid.x = (he - 1) / BLOCK_SIZE + 1;
-    printf("Num half edges to cover: %d -- Grid size: %d\n", he, dim_grid.x);
-    debugKernel<<<dim_grid, dim_block>>>(in);
+    dim_grid.x = MIN((he - 1) / BLOCK_SIZE + 1, MAX_GRID_SIZE);
+    printf("Actual grid size: %d\n", dim_grid.x);
+    // calculate better grid size
+    resetMesh<<<dim_grid, dim_block>>>(in, out);
 
     quadRefineEdges<<<dim_grid, dim_block>>>(in, out);
     quadFacePoints<<<dim_grid, dim_block>>>(in, out);
     quadEdgePoints<<<dim_grid, dim_block>>>(in, out);
     quadVertexPoints<<<dim_grid, dim_block>>>(in, out);
     
-    debugKernel<<<dim_grid, dim_block>>>(out);
+    // debugKernel<<<dim_grid, dim_block>>>(out);
     // result is in out; after this swap, the result is in in
     meshSwap(&in, &out);
   }
@@ -57,10 +57,12 @@ DeviceMesh performSubdivision(DeviceMesh* input, DeviceMesh* output, int subdivi
   cuda_ret = cudaDeviceSynchronize();
   cudaErrCheck(cuda_ret, "Unable to execute kernel");
 
-  stopTime(&timer); printf("Kernel execution took: %f s\n\n", elapsedTime(timer));
+  stopTime(&timer); printf("Kernel execution took: %f s\n------------------\n\n", elapsedTime(timer));
   DeviceMesh m =  devicePointerToHostMesh(in);
-  debugKernel2<<<dim_grid, dim_block>>>(m);
+  // debugKernel<<<dim_grid, dim_block>>>(in);
   // cuda free in and out
+  cudaFree(in);
+  cudaFree(out);
   return m;
   
 }

@@ -34,18 +34,6 @@ void allocQuadMesh(Mesh* mesh) {
     mesh->verts  = (int*)malloc(mesh->numHalfEdges * sizeof(int));
 }
 
-void freeDeviceMesh(Mesh* mesh) {
-    cudaFree(mesh->xCoords);
-    cudaFree(mesh->yCoords);
-    cudaFree(mesh->zCoords);
-    cudaFree(mesh->twins);
-    cudaFree(mesh->nexts);
-    cudaFree(mesh->prevs);
-    cudaFree(mesh->verts);
-    cudaFree(mesh->edges);
-    cudaFree(mesh->faces);
-}
-
 void freeMesh(Mesh* mesh) {
     free(mesh->xCoords);
     free(mesh->yCoords);
