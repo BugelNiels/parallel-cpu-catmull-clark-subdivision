@@ -155,6 +155,7 @@ __global__ void quadEdgePoints(DeviceMesh* in, DeviceMesh* out) {
     float x, y, z;
     // boundary
     if(in->twins[h] < 0) {
+        printf("boundary edge!\n");
         int i = in->verts[next(h)];
         x = (in->xCoords[v] + in->xCoords[i]) / 2.0f;
         y = (in->yCoords[v] + in->yCoords[i]) / 2.0f;
@@ -162,9 +163,9 @@ __global__ void quadEdgePoints(DeviceMesh* in, DeviceMesh* out) {
         // atomic add not necessary for boundaries, but likely outweighs branch divergence penalties        
     } else {
         int i = vd + face(h);
-        x = (in->xCoords[v] + in->xCoords[i]) / 4.0f;
-        y = (in->yCoords[v] + in->yCoords[i]) / 4.0f;
-        z = (in->zCoords[v] + in->zCoords[i]) / 4.0f;
+        x = (in->xCoords[v] + out->xCoords[i]) / 4.0f;
+        y = (in->yCoords[v] + out->yCoords[i]) / 4.0f;
+        z = (in->zCoords[v] + out->zCoords[i]) / 4.0f;
     }    
     // TODO inline if
     atomicAdd(&out->xCoords[j], x);
@@ -196,9 +197,9 @@ __global__ void quadVertexPoints(DeviceMesh* in, DeviceMesh* out) {
         int i = vd + face(h);
         int j = vd + in->numFaces + in->edges[h];
         float n2 = n * n;
-        x = (4 * out->xCoords[j] - out->xCoords[i] + (n - 3) * x) / n2;
-        y = (4 * out->yCoords[j] - out->yCoords[i] + (n - 3) * x) / n2;
-        z = (4 * out->zCoords[j] - out->zCoords[i] + (n - 3) * x) / n2;
+        x = (4 * out->xCoords[j] - out->xCoords[i] + (n - 3) * in->xCoords[v]) / n2;
+        y = (4 * out->yCoords[j] - out->yCoords[i] + (n - 3) * in->yCoords[v]) / n2;
+        z = (4 * out->zCoords[j] - out->zCoords[i] + (n - 3) * in->zCoords[v]) / n2;
         atomicAdd(&out->xCoords[v], x);
         atomicAdd(&out->yCoords[v], y);
         atomicAdd(&out->zCoords[v], z);
