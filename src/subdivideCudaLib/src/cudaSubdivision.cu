@@ -46,7 +46,7 @@ Mesh cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
 
 
     int isQuad = mesh->nexts == NULL || mesh->prevs == NULL || mesh->faces == NULL;
-	// TODO: in mesh does not need as much memory only D-1
+	// TODO: in mesh does not need as much memory only D-1; which mesh get these, depends on the number of subdivision levels
 	allocateDeviceMemory(&in, finalNumberOfVerts, finalNumberOfHalfEdges, mesh->numHalfEdges, isQuad);
 	allocateDeviceMemory(&out, finalNumberOfVerts, finalNumberOfHalfEdges, 0, 0);
 

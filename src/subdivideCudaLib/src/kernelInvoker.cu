@@ -19,10 +19,6 @@ DeviceMesh performSubdivision(DeviceMesh* input, DeviceMesh* output, int subdivi
 
   // device must be synced before this point
 
-  // swap these two, so that the initial mesh swap puts them right
-
-
-
 	DeviceMesh* in = toDevicePointer(input);
 	DeviceMesh* out = toDevicePointer(output);
 
@@ -46,22 +42,24 @@ DeviceMesh performSubdivision(DeviceMesh* input, DeviceMesh* output, int subdivi
     // TODO: take care of max grid size
     dim_grid.x = (he - 1) / BLOCK_SIZE + 1;
     printf("Num half edges to cover: %d -- Grid size: %d\n", he, dim_grid.x);
-    // debugKernel<<<dim_grid, dim_block>>>(in);
+    debugKernel<<<dim_grid, dim_block>>>(in);
+
     quadRefineEdges<<<dim_grid, dim_block>>>(in, out);
     quadFacePoints<<<dim_grid, dim_block>>>(in, out);
     quadEdgePoints<<<dim_grid, dim_block>>>(in, out);
     quadVertexPoints<<<dim_grid, dim_block>>>(in, out);
+    
+    debugKernel<<<dim_grid, dim_block>>>(out);
     // result is in out; after this swap, the result is in in
-    // debugKernel<<<dim_grid, dim_block>>>(in);
     meshSwap(&in, &out);
   }
 
-  debugKernel<<<dim_grid, dim_block>>>(in);
   cuda_ret = cudaDeviceSynchronize();
   cudaErrCheck(cuda_ret, "Unable to execute kernel");
 
   stopTime(&timer); printf("Kernel execution took: %f s\n\n", elapsedTime(timer));
   DeviceMesh m =  devicePointerToHostMesh(in);
+  debugKernel2<<<dim_grid, dim_block>>>(m);
   // cuda free in and out
   return m;
   

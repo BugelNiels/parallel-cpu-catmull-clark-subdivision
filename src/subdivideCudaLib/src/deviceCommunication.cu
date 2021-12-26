@@ -17,7 +17,7 @@ void allocateDeviceMemory(DeviceMesh* deviceMesh, int m, int n, int n0, int isQu
     cuda_ret = cudaMalloc((void**)&deviceMesh->yCoords, m * sizeof(float));
     cudaErrCheck(cuda_ret, "Unable to allocate device memory for Y coordinates");
 	cuda_ret = cudaMalloc((void**)&deviceMesh->zCoords, m * sizeof(float));
-    cudaErrCheck(cuda_ret, "Unable to allocate device memory for Z coordinates");
+    cudaErrCheck(cuda_ret, "Unable to allocate device memory for Z coordinates");  
 
 
     printf("    Allocating size %d: %lu bytes\n", n, n * sizeof(int));
