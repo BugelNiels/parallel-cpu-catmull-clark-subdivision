@@ -13,3 +13,4 @@ src/.vs
 src/ui_mainwindow.h
 **/*.out
 src/subdivideCudaLib/subdivide
+src/subdivideCudaLib/result.obj
