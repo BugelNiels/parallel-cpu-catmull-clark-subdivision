@@ -18,14 +18,17 @@ typedef struct DeviceMesh {
 	int* faces;
 
     // pointers to single int values
-	int* numHalfEdges;
-  	int* numEdges;
-  	int* numFaces;
-  	int* numVerts;
+	int numHalfEdges;
+  	int numEdges;
+  	int numFaces;
+  	int numVerts;
 } DeviceMesh;
 
 DeviceMesh createEmptyCopyOnDevice(Mesh* mesh);
 DeviceMesh initEmptyDeviceMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges);
+
+DeviceMesh* toDevicePointer(DeviceMesh* mesh_h);
+DeviceMesh devicePointerToHostMesh(DeviceMesh* mesh_d);
 void freeDeviceMesh(DeviceMesh* mesh);
 
 #endif // DEVICE_MESH_CUH

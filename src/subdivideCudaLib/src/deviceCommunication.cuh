@@ -5,8 +5,7 @@
 #include "mesh/deviceMesh.cuh"
 
 void allocateDeviceMemory(DeviceMesh* deviceMesh, int m, int n, int n0, int isQuad);
-void reallocHostMemory(Mesh* hostMesh, DeviceMesh* deviceMesh);
 void copyHostToDeviceMesh(Mesh* hostMesh, DeviceMesh* deviceMesh, int isQuad);
-void copyDeviceMeshToHostMesh(Mesh* hostMesh, DeviceMesh* deviceMesh);
+Mesh copyDeviceMeshToHostMesh(DeviceMesh* deviceMesh);
 
 #endif // DEVICE_COMMUNICATION_CUH

@@ -13,22 +13,23 @@ __device__ int face(int h) { return h / 4; }
 
 __device__ void debugMesh(DeviceMesh* mesh) {
     if(blockIdx.x == 0 && threadIdx.x == 0) {
-        printf("%d %d %d %d\n", *mesh->numVerts, *mesh->numHalfEdges, *mesh->numFaces, *mesh->numEdges);
-        for(int i = 0; i < *mesh->numVerts; i++) {
+        printf("%d %d %d %d\n", mesh->numVerts, mesh->numHalfEdges, mesh->numFaces, mesh->numEdges);
+        for(int i = 0; i < mesh->numVerts; i++) {
             printf("(%.2lf %.2lf %.2lf) ", mesh->xCoords[i], mesh->yCoords[i], mesh->zCoords[i]);
         }
         printf("\nTwins:\n");
-        for(int i = 0; i < *mesh->numHalfEdges; i++) {
+        for(int i = 0; i < mesh->numHalfEdges; i++) {
             printf("%d ", mesh->twins[i]);
         }
         printf("\nVerts:\n");
-        for(int i = 0; i < *mesh->numHalfEdges; i++) {
+        for(int i = 0; i < mesh->numHalfEdges; i++) {
             printf("%d ", mesh->verts[i]);
         }
         printf("\nEdges:\n");
-        for(int i = 0; i < *mesh->numHalfEdges; i++) {
+        for(int i = 0; i < mesh->numHalfEdges; i++) {
             printf("%d ", mesh->edges[i]);
         }
+        printf("\n");
     }
 }
 
@@ -37,9 +38,9 @@ __device__ void edgeRefinement(int h, DeviceMesh* in, DeviceMesh* out) {
     int hp = prev(h);
     int he = in->edges[h];
 
-    int vd = *in->numVerts;
-    int fd = *in->numFaces;
-    int ed = *in->numEdges;
+    int vd = in->numVerts;
+    int fd = in->numFaces;
+    int ed = in->numEdges;
 
     // For boundaries
     int ht = in->twins[h];
@@ -86,7 +87,7 @@ __device__ int valence(int h, DeviceMesh* in) {
 
 __device__ void facePoint(int h, DeviceMesh* in, DeviceMesh* out, float* vertCoordsX, float* vertCoordsY, float* vertCoordsZ) {
     int v = in->verts[h];
-    int i = *in->numVerts + face(h);
+    int i = in->numVerts + face(h);
     int ti = i % BLOCK_SIZE;
     vertCoordsX[ti] += in->xCoords[v];
     vertCoordsY[ti] += in->yCoords[v];
@@ -102,12 +103,12 @@ __device__ void facePoint(int h, DeviceMesh* in, DeviceMesh* out, float* vertCoo
     } 
 }
 
-__global__ void quadRefineEdges(DeviceMesh in, DeviceMesh out) {
+__global__ void quadRefineEdges(DeviceMesh* in, DeviceMesh* out) {
 
-    int numEdges = 2 * *in.numEdges + *in.numHalfEdges;
-    int numFaces = *in.numHalfEdges;
-    int numHalfEdges = *in.numHalfEdges * 4;
-    int numVerts = *in.numVerts + *in.numFaces + *in.numEdges;
+    int numEdges = 2 * in->numEdges + in->numHalfEdges;
+    int numFaces = in->numHalfEdges;
+    int numHalfEdges = in->numHalfEdges * 4;
+    int numVerts = in->numVerts + in->numFaces + in->numEdges;
 
     // TODO: check that h does not go out of bounds.
     // TODO 2: loop
@@ -115,20 +116,20 @@ __global__ void quadRefineEdges(DeviceMesh in, DeviceMesh out) {
     // half edge index
     int h = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if(h < *in.numHalfEdges) {
-        edgeRefinement(h, &in, &out);
+    if(h < in->numHalfEdges) {
+        edgeRefinement(h, in, out);
     }
     
     if(blockIdx.x == 0 && threadIdx.x == 0) {
         // TODO: each statement by different thread? (with offset WARP_SIZE)
-        *out.numEdges = numEdges;
-        *out.numFaces = numFaces;
-        *out.numHalfEdges = numHalfEdges;
-        *out.numVerts = numVerts;
+        out->numEdges = numEdges;
+        out->numFaces = numFaces;
+        out->numHalfEdges = numHalfEdges;
+        out->numVerts = numVerts;
     }
 }
 
-__global__ void quadFacePoints(DeviceMesh in, DeviceMesh out) {
+__global__ void quadFacePoints(DeviceMesh* in, DeviceMesh* out) {
     
     // each block covers BLOCK_SIZE / 4 faces
     __shared__ float vertCoordsX[FACES_PER_BLOCK];
@@ -144,82 +145,87 @@ __global__ void quadFacePoints(DeviceMesh in, DeviceMesh out) {
     __syncthreads();
     int h = blockIdx.x * blockDim.x + threadIdx.x;
 
-    int i = *in.numVerts + face(h);
-    if(h < *in.numHalfEdges) {
+    int i = in->numVerts + face(h);
+    if(h < in->numHalfEdges) {
     
-        int v = in.verts[h];
+        int v = in->verts[h];
         int ti = i % BLOCK_SIZE;
         // face point calculation
-        atomicAdd(&vertCoordsX[ti], in.xCoords[v]);
-        atomicAdd(&vertCoordsY[ti], in.yCoords[v]);
-        atomicAdd(&vertCoordsZ[ti], in.zCoords[v]);
+        atomicAdd(&vertCoordsX[ti], in->xCoords[v]);
+        atomicAdd(&vertCoordsY[ti], in->yCoords[v]);
+        atomicAdd(&vertCoordsZ[ti], in->zCoords[v]);
     }
     
     __syncthreads();
 
-    if(h < *in.numHalfEdges && threadIdx.x < FACES_PER_BLOCK) {
-        out.xCoords[i] = vertCoordsX[threadIdx.x] / 4.0f;
-        out.yCoords[i] = vertCoordsY[threadIdx.x] / 4.0f;
-        out.zCoords[i] = vertCoordsZ[threadIdx.x] / 4.0f;
+    if(h < in->numHalfEdges && threadIdx.x < FACES_PER_BLOCK) {
+        out->xCoords[i] = vertCoordsX[threadIdx.x] / 4.0f;
+        out->yCoords[i] = vertCoordsY[threadIdx.x] / 4.0f;
+        out->zCoords[i] = vertCoordsZ[threadIdx.x] / 4.0f;
     }
 }
 
-__global__ void quadEdgePoints(DeviceMesh in, DeviceMesh out) {
+__global__ void quadEdgePoints(DeviceMesh* in, DeviceMesh* out) {
     int h = blockIdx.x * blockDim.x + threadIdx.x;
-    if(h >= *in.numHalfEdges) {
+    if(h >= in->numHalfEdges) {
         return;
     }
-    int vd = *in.numVerts;
-    int fd = *in.numFaces;
-    int v = in.verts[h];
-    int j = vd + fd + in.edges[h];
+    int vd = in->numVerts;
+    int fd = in->numFaces;
+    int v = in->verts[h];
+    int j = vd + fd + in->edges[h];
 
-    int th = in.twins[h] < 0;
+    int th = in->twins[h] < 0;
     // if th < 0 then boundary
-    int i = th < 0 ? in.verts[next(h)] : vd + face(h) ;
+    int i = th < 0 ? in->verts[next(h)] : vd + face(h) ;
     int divisor = th < 0 ? 2.0f : 4.0f;
 
-    DeviceMesh* m = th < 0 ? &in : &out;
+    DeviceMesh* m = th < 0 ? in : out;
 
-    float x = (m->xCoords[v] + in.xCoords[i]) / divisor;
-    float y = (m->yCoords[v] + in.yCoords[i]) / divisor;
-    float z = (m->zCoords[v] + in.zCoords[i]) / divisor;
+    float x = (m->xCoords[v] + in->xCoords[i]) / divisor;
+    float y = (m->yCoords[v] + in->yCoords[i]) / divisor;
+    float z = (m->zCoords[v] + in->zCoords[i]) / divisor;
     // Atomic add
     // doubles?
     // atomic add not necessary for boundaries, but likely outweighs branch divergence penalties
-    atomicAdd(&out.xCoords[j], x);
-    atomicAdd(&out.yCoords[j], y);
-    atomicAdd(&out.zCoords[j], z);
+    atomicAdd(&out->xCoords[j], x);
+    atomicAdd(&out->yCoords[j], y);
+    atomicAdd(&out->zCoords[j], z);
     
 }
-__global__ void quadVertexPoints(DeviceMesh in, DeviceMesh out) {
+__global__ void quadVertexPoints(DeviceMesh* in, DeviceMesh* out) {
     // shared memory?
     int h = blockIdx.x * blockDim.x + threadIdx.x;
-    if(h >= *in.numHalfEdges) {
+    if(h >= in->numHalfEdges) {
         return;
     }
-    float n = valence(h, &in);
-    int v = in.verts[h];
+    float n = valence(h, in);
+    int v = in->verts[h];
 
-    float x = in.xCoords[v];
-    float y = in.yCoords[v];
-    float z = in.zCoords[v];
+    float x = in->xCoords[v];
+    float y = in->yCoords[v];
+    float z = in->zCoords[v];
     if(n >= 0) {
-        int vd = *in.numVerts;
+        int vd = in->numVerts;
         int i = vd + face(h);
-        int j = vd + *in.numFaces + in.edges[h];
+        int j = vd + in->numFaces + in->edges[h];
         float n2 = n * n;
-        x = (4 * out.xCoords[j] - out.xCoords[i] + (n - 3) * x) / n2;
-        y = (4 * out.yCoords[j] - out.yCoords[i] + (n - 3) * x) / n2;
-        z = (4 * out.zCoords[j] - out.zCoords[i] + (n - 3) * x) / n2;
+        x = (4 * out->xCoords[j] - out->xCoords[i] + (n - 3) * x) / n2;
+        y = (4 * out->yCoords[j] - out->yCoords[i] + (n - 3) * x) / n2;
+        z = (4 * out->zCoords[j] - out->zCoords[i] + (n - 3) * x) / n2;
     }
-    atomicAdd(&out.xCoords[v], x);
-    atomicAdd(&out.yCoords[v], y);
-    atomicAdd(&out.zCoords[v], z);
+    atomicAdd(&out->xCoords[v], x);
+    atomicAdd(&out->yCoords[v], y);
+    atomicAdd(&out->zCoords[v], z);
 }
 
 
 
-__global__ void debugKernel(DeviceMesh in) {
+__global__ void debugKernel(DeviceMesh* in) {
+    debugMesh(in);
+}
+
+
+__global__ void debugKernel2(DeviceMesh in) {
     debugMesh(&in);
 }

@@ -4,14 +4,14 @@
 #include "deviceCommunication.cuh"
 #include "util/util.cuh"
 
-
 // m = number of vertices in vD; n = number of half edges in vD
 void allocateDeviceMemory(DeviceMesh* deviceMesh, int m, int n, int n0, int isQuad) {
 	cudaError_t cuda_ret;
 	Timer timer;
 	printf("Allocating device variables...\n"); fflush(stdout);
     startTime(&timer);
-    printf("    Allocating size %d: %d bytes\n", m, m * sizeof(float));
+    printf("    Allocating size %d: %lu bytes\n", m, m * sizeof(float));
+
     cuda_ret = cudaMalloc((void**)&deviceMesh->xCoords, m * sizeof(float));
     cudaErrCheck(cuda_ret, "Unable to allocate device memory for X coordinates");
     cuda_ret = cudaMalloc((void**)&deviceMesh->yCoords, m * sizeof(float));
@@ -20,7 +20,7 @@ void allocateDeviceMemory(DeviceMesh* deviceMesh, int m, int n, int n0, int isQu
     cudaErrCheck(cuda_ret, "Unable to allocate device memory for Z coordinates");
 
 
-    printf("    Allocating size %d: %d bytes\n", n, n * sizeof(int));
+    printf("    Allocating size %d: %lu bytes\n", n, n * sizeof(int));
 	cuda_ret = cudaMalloc((void**)&deviceMesh->twins, n * sizeof(int));
     cudaErrCheck(cuda_ret, "Unable to allocate device memory for twin array");
 	cuda_ret = cudaMalloc((void**)&deviceMesh->verts, n * sizeof(int));
@@ -49,25 +49,6 @@ int getDeviceVal(int** deviceLoc) {
     return val;
 }
 
-void reallocHostMemory(Mesh* hostMesh, DeviceMesh* deviceMesh) {
-
-    
-    hostMesh->numEdges = getDeviceVal(&deviceMesh->numEdges);
-    hostMesh->numFaces = getDeviceVal(&deviceMesh->numFaces);
-    hostMesh->numHalfEdges = getDeviceVal(&deviceMesh->numHalfEdges);
-    hostMesh->numVerts = getDeviceVal(&deviceMesh->numVerts);
-
-    printf("%d %d %d %d\n", hostMesh->numVerts, hostMesh->numHalfEdges, hostMesh->numFaces, hostMesh->numEdges);
-
-    hostMesh->xCoords = (float*)realloc(hostMesh->xCoords, hostMesh->numVerts);
-    hostMesh->yCoords = (float*)realloc(hostMesh->yCoords, hostMesh->numVerts);
-    hostMesh->zCoords = (float*)realloc(hostMesh->zCoords, hostMesh->numVerts);
-
-    hostMesh->twins = (int*)realloc(hostMesh->twins, hostMesh->numHalfEdges);
-    hostMesh->verts = (int*)realloc(hostMesh->verts, hostMesh->numHalfEdges);
-    hostMesh->edges = (int*)realloc(hostMesh->edges, hostMesh->numHalfEdges);
-}
-
 void copyHostToDeviceMesh(Mesh* from, DeviceMesh* to, int isQuad) {
 	Timer timer;
 
@@ -81,7 +62,7 @@ void copyHostToDeviceMesh(Mesh* from, DeviceMesh* to, int isQuad) {
         printf("Source mesh coords are empty"); 
         return;
     }
-    printf("    Copying %d: %d bytes\n", m, m * sizeof(float));
+    printf("    Copying %lu bytes\n", m * sizeof(float));
 	cuda_ret = cudaMemcpy(to->xCoords, from->xCoords, m * sizeof(float), cudaMemcpyHostToDevice);
     cudaErrCheck(cuda_ret, "Unable to copy x-coordinates to the device");
 	cuda_ret = cudaMemcpy(to->yCoords, from->yCoords, m * sizeof(float), cudaMemcpyHostToDevice);
@@ -94,7 +75,7 @@ void copyHostToDeviceMesh(Mesh* from, DeviceMesh* to, int isQuad) {
         printf("Source mesh properties are empty"); 
         return;
     }
-    printf("    Copying %d: %d bytes\n", n, n * sizeof(int));
+    printf("    Copying %lu bytes\n", n * sizeof(int));
 	cuda_ret = cudaMemcpy(to->twins, from->twins, n * sizeof(int), cudaMemcpyHostToDevice);
     cudaErrCheck(cuda_ret, "Unable to copy twins to the device");
 	cuda_ret = cudaMemcpy(to->verts, from->verts, n * sizeof(int), cudaMemcpyHostToDevice);
@@ -114,43 +95,43 @@ void copyHostToDeviceMesh(Mesh* from, DeviceMesh* to, int isQuad) {
 	stopTime(&timer); printf("Copy to device took %f s\n\n", elapsedTime(timer));
 }
 
-void copyDeviceMeshToHostMesh(Mesh* to, DeviceMesh* from) {
+Mesh copyDeviceMeshToHostMesh(DeviceMesh* from) {
 	Timer timer;
 
 	printf("Copying mesh from device back to host...\n"); fflush(stdout);
     startTime(&timer);
-
     cudaError_t cuda_ret;
 
+    Mesh to = initMesh(from->numVerts, from->numHalfEdges, from->numFaces, from->numEdges);
+    allocQuadMesh(&to);
+
     // to already has the correct values for num..
-    int m = to->numVerts;
+    int m = to.numVerts;
     if(m == 0) {
         printf("Source mesh coords are empty"); 
-        return;
+        return to;
     }
-    printf("    Copying %d: %d bytes\n", m, m * sizeof(float));
-	cuda_ret = cudaMemcpy(to->xCoords, from->xCoords, m * sizeof(float), cudaMemcpyDeviceToHost);
+    printf("    Copying %lu bytes\n", m * sizeof(float));
+	cuda_ret = cudaMemcpy(to.xCoords, from->xCoords, m * sizeof(float), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy x-coordinates from the device");
-	cuda_ret = cudaMemcpy(to->yCoords, from->yCoords, m * sizeof(float), cudaMemcpyDeviceToHost);
+	cuda_ret = cudaMemcpy(to.yCoords, from->yCoords, m * sizeof(float), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy y-coordinates from the device")
-	cuda_ret = cudaMemcpy(to->zCoords, from->zCoords, m * sizeof(float), cudaMemcpyDeviceToHost);
+	cuda_ret = cudaMemcpy(to.zCoords, from->zCoords, m * sizeof(float), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy z-coordinates from the device");
 
-	int n = to->numHalfEdges;
+	int n = to.numHalfEdges;
     if(n == 0) {
         printf("Source mesh properties are empty"); 
-        return;
+        return to;
     }
     // these arrays overlap
-    printIntArr(to->verts, n);
-	cuda_ret = cudaMemcpy(to->twins, from->twins, n * sizeof(int), cudaMemcpyDeviceToHost);
+    printf("    Copying %lu bytes\n", n * sizeof(int));
+	cuda_ret = cudaMemcpy(to.twins, from->twins, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy twins from the device");
-	cuda_ret = cudaMemcpy(to->verts, from->verts, n * sizeof(int), cudaMemcpyDeviceToHost);
+	cuda_ret = cudaMemcpy(to.verts, from->verts, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy verts from the device");
-	cuda_ret = cudaMemcpy(to->edges, from->edges, n * sizeof(int), cudaMemcpyDeviceToHost);
+	cuda_ret = cudaMemcpy(to.edges, from->edges, n * sizeof(int), cudaMemcpyDeviceToHost);
     cudaErrCheck(cuda_ret, "Unable to copy edges from the device");
-    printIntArr(to->verts, n);
- 
-
 	stopTime(&timer); printf("Copy to host took: %f s\n\n", elapsedTime(timer));
+    return to;
 }

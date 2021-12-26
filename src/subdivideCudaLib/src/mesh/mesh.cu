@@ -13,6 +13,9 @@ Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges) {
 	mesh.numHalfEdges = numHalfEdges;
 	mesh.numEdges = numEdges;
 	mesh.numFaces = numFaces;
+    mesh.xCoords = NULL;
+    mesh.yCoords = NULL;
+    mesh.zCoords = NULL;
     mesh.nexts = NULL;
     mesh.prevs = NULL;
     mesh.faces = NULL;
@@ -21,6 +24,15 @@ Mesh initMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges) {
     mesh.verts = NULL;
 	return mesh;
 } 
+
+void allocQuadMesh(Mesh* mesh) {
+    mesh->xCoords = (float*)malloc(mesh->numVerts * sizeof(float));
+    mesh->yCoords = (float*)malloc(mesh->numVerts * sizeof(float));
+    mesh->zCoords = (float*)malloc(mesh->numVerts * sizeof(float));
+    mesh->twins  = (int*)malloc(mesh->numHalfEdges * sizeof(int));
+    mesh->edges  = (int*)malloc(mesh->numHalfEdges * sizeof(int));
+    mesh->verts  = (int*)malloc(mesh->numHalfEdges * sizeof(int));
+}
 
 void freeDeviceMesh(Mesh* mesh) {
     cudaFree(mesh->xCoords);

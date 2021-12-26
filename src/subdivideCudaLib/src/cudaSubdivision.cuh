@@ -3,6 +3,6 @@
 
 #include "mesh/mesh.cuh"
 
-void cudaSubdivide(Mesh* mesh, int subdivisionLevel);
+Mesh cudaSubdivide(Mesh* mesh, int subdivisionLevel);
 
 #endif // CUDA_SUBDIVISION_CUH

@@ -3,6 +3,6 @@
 
 #include "mesh/deviceMesh.cuh"
 
-DeviceMesh performSubdivision(DeviceMesh in, DeviceMesh out, int subdivisionLevel, int h0);
+DeviceMesh performSubdivision(DeviceMesh* in, DeviceMesh* out, int subdivisionLevel, int h0);
 
 #endif // KERNEL_INVOKER_CUH

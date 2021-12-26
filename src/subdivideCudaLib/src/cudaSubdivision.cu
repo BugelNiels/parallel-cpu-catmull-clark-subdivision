@@ -21,13 +21,14 @@ void verifyMesh(Mesh* mesh) {
 	printf("Mesh verified\n");
 }
 
-void cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
+Mesh cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
 	cudaError_t cuda_ret;
 	verifyMesh(mesh);
 	printf("Starting Subdvision\n");
 	
 	// use double buffering; calculate final number of half edges and numVerts and allocat out and in arrays
 	// switch each subdivision level
+	// These are device pointers
 	DeviceMesh in = createEmptyCopyOnDevice(mesh);
 	DeviceMesh out = createEmptyCopyOnDevice(mesh);
 
@@ -57,15 +58,11 @@ void cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
 	cuda_ret = cudaDeviceSynchronize();
 	cudaErrCheck(cuda_ret, "Unable to sync");
 
-	DeviceMesh result = performSubdivision(in, out, subdivisionLevel, mesh->numHalfEdges);
+	DeviceMesh result_d = performSubdivision(&in, &out, subdivisionLevel, mesh->numHalfEdges);
 	// device is synced after this call
 	// result is in out
-	reallocHostMemory(mesh, &result);	
 
-	cuda_ret = cudaDeviceSynchronize();
-	cudaErrCheck(cuda_ret, "Unable to sync");
-	
-	copyDeviceMeshToHostMesh(mesh, &result);
+	Mesh result_h = copyDeviceMeshToHostMesh(&result_d);
 	
 	cuda_ret = cudaDeviceSynchronize();
 	cudaErrCheck(cuda_ret, "Unable to sync");
@@ -76,4 +73,5 @@ void cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
 	freeDeviceMesh(&out);
 
 	printf("Subdivision Complete!\n");
+	return result_h;
 }

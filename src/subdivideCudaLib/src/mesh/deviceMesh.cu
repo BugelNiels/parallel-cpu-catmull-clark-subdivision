@@ -18,15 +18,39 @@ void setDevicePointerValue(int** loc, int val) {
 
 DeviceMesh initEmptyDeviceMesh(int numVerts, int numHalfEdges, int numFaces, int numEdges) {
 	DeviceMesh mesh = {};
+    mesh.numVerts = numVerts;
+    mesh.numHalfEdges = numHalfEdges;
+    mesh.numFaces = numFaces;
+    mesh.numEdges = numEdges;
+
     printf("\n--\nCopying %d %d %d %d\n --\n", numVerts, numHalfEdges, numFaces, numEdges);
-    setDevicePointerValue(&mesh.numVerts, numVerts);
-    setDevicePointerValue(&mesh.numHalfEdges, numHalfEdges);
-    setDevicePointerValue(&mesh.numFaces, numFaces);
-    setDevicePointerValue(&mesh.numEdges, numEdges);
+    // setDevicePointerValue(&mesh.numVerts, numVerts);
+    // setDevicePointerValue(&mesh.numHalfEdges, numHalfEdges);
+    // setDevicePointerValue(&mesh.numFaces, numFaces);
+    // setDevicePointerValue(&mesh.numEdges, numEdges);
 	return mesh;
 } 
 
+DeviceMesh* toDevicePointer(DeviceMesh* mesh_h) {
+    cudaError_t cuda_ret;
+    DeviceMesh* mesh_d;
+    cuda_ret = cudaMalloc((void**)&mesh_d, sizeof(DeviceMesh));
+    cudaErrCheck(cuda_ret, "Unable to allocate device struct val");
+    cuda_ret = cudaMemcpy(mesh_d, mesh_h, sizeof(DeviceMesh), cudaMemcpyHostToDevice);
+    cudaErrCheck(cuda_ret, "Unable to copy struct to device pointer");
+	return mesh_d;
+} 
+
+DeviceMesh devicePointerToHostMesh(DeviceMesh* mesh_d) {
+    cudaError_t cuda_ret;
+    DeviceMesh mesh_h = {};
+    cuda_ret = cudaMemcpy(&mesh_h, mesh_d, sizeof(DeviceMesh), cudaMemcpyDeviceToHost);
+    cudaErrCheck(cuda_ret, "Unable to copy struct to host pointer");
+	return mesh_h;
+} 
+
 void freeDeviceMesh(DeviceMesh* mesh) {
+    // Mesh is device pointer
     cudaFree(mesh->xCoords);
     cudaFree(mesh->yCoords);
     cudaFree(mesh->zCoords);
