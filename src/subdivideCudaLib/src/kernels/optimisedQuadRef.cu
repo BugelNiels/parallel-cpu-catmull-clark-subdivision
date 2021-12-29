@@ -11,40 +11,7 @@ inline __device__ int prev(int h) { return h % 4 == 0 ? h + 3 : h - 1; }
 
 inline __device__ int face(int h) { return h / 4; }
 
-
-__device__ void optQuadVertexPoint(int h, DeviceMesh* in, DeviceMesh* out) {
-    // shared memory?
-    int v = in->verts[h];
-    float n = valence(h, in);
-
-    float x = in->xCoords[v];
-    float y = in->yCoords[v];
-    float z = in->zCoords[v];
-
-    // boundary half edge
-    if(in->twins[h] < 0) {
-        out->xCoords[v] = x;
-        out->yCoords[v] = y;
-        out->zCoords[v] = z;
-    } else if(n >= 0) {
-        int vd = in->numVerts;
-        int i = vd + face(h);
-        int j = vd + in->numFaces + in->edges[h];
-        float n2 = n * n;
-        x = (4 * out->xCoords[j] - out->xCoords[i] + (n - 3) * x) / n2;
-        y = (4 * out->yCoords[j] - out->yCoords[i] + (n - 3) * y) / n2;
-        z = (4 * out->zCoords[j] - out->zCoords[i] + (n - 3) * z) / n2;
-        atomicAdd(&out->xCoords[v], x);
-        atomicAdd(&out->yCoords[v], y);
-        atomicAdd(&out->zCoords[v], z);
-    }
-}
-
 __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    int stride = blockDim.x * gridDim.x;
-
     // first BLOCK_SIZE / 4 are the face points
     // next come .. edge points
     __shared__ float facePointsX[FACES_PER_BLOCK];
@@ -54,12 +21,11 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
     int vd = in->numVerts;
     int fd = in->numFaces;
     int ed = in->numEdges;
-    int hn = in->numHalfEdges;
 
     int ti = threadIdx.x / 4;
     int t2 = threadIdx.x % 4;
 
-    for(int h = i; h < hn; h += stride) {
+    for(int h = blockIdx.x * blockDim.x + threadIdx.x; h < in->numHalfEdges; h += blockDim.x * gridDim.x) {
         // not all threads in the warp execute this, but it should eliminate the need for thread sync
         if(t2 == 0) {
             // reset shared memory
@@ -71,26 +37,22 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
         int hp = prev(h);
         int he = in->edges[h];
         int v = in->verts[h];
-
-        // For boundaries
         int ht = in->twins[h];
-        int thp = in->twins[hp];
-        int ehp = in->edges[hp];
 
         out->twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
         out->twins[4 * h + 1] = 4 * next(h) + 2;
         out->twins[4 * h + 2] = 4 * hp + 1;
-        out->twins[4 * h + 3] = 4 * thp;
+        out->twins[4 * h + 3] = 4 * in->twins[hp];
 
         out->verts[4 * h] = v;
         out->verts[4 * h + 1] = vd + fd + he;
         out->verts[4 * h + 2] = vd + face(h);
-        out->verts[4 * h + 3] = vd + fd + ehp;
+        out->verts[4 * h + 3] = vd + fd + in->edges[hp];
 
         out->edges[4 * h] = h > ht ? 2 * he : 2 * he + 1;
         out->edges[4 * h + 1] = 2 * ed + h;
         out->edges[4 * h + 2] = 2 * ed + hp;
-        out->edges[4 * h + 3] = hp > thp ? 2 * ehp + 1 : 2 * ehp;
+        out->edges[4 * h + 3] = hp > in->twins[hp] ? 2 * in->edges[hp] + 1 : 2 * in->edges[hp];
         
         // face points
         float invX = in->xCoords[v];
@@ -112,7 +74,6 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
         
         if(ht < 0) {
             // TODO: make it not branch divergence
-            int k = in->verts[next(h)];
             x = edgex;
             y = edgey;
             z = edgez;
@@ -150,12 +111,4 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
             out->zCoords[ind] = facePointsZ[ti];
         }
     }  
-}
-
-__global__ void optQuadVertexPoints(DeviceMesh* in, DeviceMesh* out) {
-    int h = blockIdx.x * blockDim.x + threadIdx.x;
-    int stride = blockDim.x * gridDim.x;
-    for(int i = h; i < in->numHalfEdges; i += stride) {
-        optQuadVertexPoint(i, in, out);
-    }   
 }
