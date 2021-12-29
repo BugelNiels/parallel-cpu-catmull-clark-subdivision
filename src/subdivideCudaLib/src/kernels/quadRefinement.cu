@@ -47,7 +47,7 @@ __device__ void edgeRefinement(int h, DeviceMesh* in, DeviceMesh* out, int vd, i
     int ht = in->twins[h];
     int thp = in->twins[hp];
     int ehp = in->edges[hp];
-    // TODO: check interleave
+    
     out->twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
     out->twins[4 * h + 1] = 4 * next(h) + 2;
     out->twins[4 * h + 2] = 4 * hp + 1;
@@ -113,7 +113,6 @@ __device__ void quadEdgePoint(int h, DeviceMesh* in, DeviceMesh* out) {
         y = (in->yCoords[v] + out->yCoords[i]) / 4.0f;
         z = (in->zCoords[v] + out->zCoords[i]) / 4.0f;
     }    
-    // TODO inline if
     atomicAdd(&out->xCoords[j], x);
     atomicAdd(&out->yCoords[j], y);
     atomicAdd(&out->zCoords[j], z);
@@ -162,7 +161,7 @@ __global__ void resetMesh(DeviceMesh* in, DeviceMesh* out) {
         out->zCoords[i] = 0;
     } 
     
-    if(blockIdx.x == 0) {
+    if(blockIdx.x == 0 && threadIdx.x == 0) {
         out->numEdges = numEdges;
         out->numFaces = numFaces;
         out->numHalfEdges = numHalfEdges;
@@ -177,7 +176,8 @@ __global__ void quadRefineEdges(DeviceMesh* in, DeviceMesh* out) {
     int vd = in->numVerts;
     int fd = in->numFaces;
     int ed = in->numEdges;
-    for(int i = h; i < in->numHalfEdges; i += stride) {
+    int hd = in->numHalfEdges;
+    for(int i = h; i < hd; i += stride) {
         edgeRefinement(i, in, out, vd, fd, ed);
     }    
 }
@@ -186,7 +186,8 @@ __global__ void quadFacePoints(DeviceMesh* in, DeviceMesh* out) {
     int h = blockIdx.x * blockDim.x + threadIdx.x;
     h *= 4;
     int stride = blockDim.x * gridDim.x;
-    for(int i = h; i < in->numHalfEdges; i += stride) {
+    int hd = in->numHalfEdges;
+    for(int i = h; i < hd; i += stride) {
         quadFacePoint(i, in, out);
     } 
 }
@@ -194,7 +195,8 @@ __global__ void quadFacePoints(DeviceMesh* in, DeviceMesh* out) {
 __global__ void quadEdgePoints(DeviceMesh* in, DeviceMesh* out) {
     int h = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
-    for(int i = h; i < in->numHalfEdges; i += stride) {
+    int hd = in->numHalfEdges;
+    for(int i = h; i < hd; i += stride) {
         quadEdgePoint(i, in, out);
     } 
 }
@@ -202,7 +204,8 @@ __global__ void quadEdgePoints(DeviceMesh* in, DeviceMesh* out) {
 __global__ void quadVertexPoints(DeviceMesh* in, DeviceMesh* out) {
     int h = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
-    for(int i = h; i < in->numHalfEdges; i += stride) {
+    int hd = in->numHalfEdges;
+    for(int i = h; i < hd; i += stride) {
         quadVertexPoint(i, in, out);
     }   
 }

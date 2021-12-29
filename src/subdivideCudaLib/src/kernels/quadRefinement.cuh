@@ -4,10 +4,12 @@
 #include "../mesh/deviceMesh.cuh"
 
 #define BLOCK_SIZE 128
-#define MAX_GRID_SIZE 32768
+#define MAX_GRID_SIZE 262144
+// #define MAX_GRID_SIZE 100
 #define WARP_SIZE 32
 #define FACES_PER_BLOCK (BLOCK_SIZE / 4)
 
+__device__ void debug(char const* m);
 __global__ void resetMesh(DeviceMesh* in, DeviceMesh* out);
 __global__ void quadRefineEdges(DeviceMesh* in, DeviceMesh* out);
 __global__ void quadFacePoints(DeviceMesh* in, DeviceMesh* out);

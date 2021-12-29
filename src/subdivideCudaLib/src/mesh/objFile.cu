@@ -1,9 +1,24 @@
+#include "objFile.cuh"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include "objFile.cuh"
+// https://stackoverflow.com/a/58244503
+// custom implementation, otherwise it won't work on windows :/
+char *stringSep(char **stringp, const char *delim) {
+    char *rv = *stringp;
+    if (rv) {
+        *stringp += strcspn(*stringp, delim);
+        if (**stringp) {
+            *(*stringp)++ = '\0';
+        } else {
+            *stringp = 0; 
+        }
+    }
+    return rv;
+}
 
 void printObjFile(ObjFile obj) {
     for(int i = 0; i < obj.numVerts; i++) {
@@ -27,56 +42,67 @@ ObjFile readObjFromFile(char const* objFileName) {
         printf("Error opening .obj file!\n");
         exit(1);
     }
-    char * line = NULL;
-    size_t len = 0;
+    size_t len = 128;
+    char* line = (char*)malloc(len * sizeof(char));
 
     ObjFile obj;
     obj.isQuad = 1;
-    obj.numVerts = 0;
-    obj.numFaces = 0;
     char *token;
 
-    // TODO: only works if there are no leading whitespaces
-    while (getline(&line, &len, objFile) != -1) {
-        if(line[0] == 'v') {
-            obj.numVerts++;
-        } else if(line[0] == 'f') {
-            obj.numFaces++;        }
-        // printf("%s -- %d\n", line, len);
-    }
-    printf("Reading %d vertices and %d faces\n", obj.numVerts, obj.numFaces);
-    rewind(objFile);
-    obj.xCoords = (float*)malloc(obj.numVerts * sizeof(float));
-    obj.yCoords = (float*)malloc(obj.numVerts * sizeof(float));
-    obj.zCoords = (float*)malloc(obj.numVerts * sizeof(float));
+    int fSize = 128;
+    int vSize = 128;
+    obj.xCoords = (float*)malloc(vSize * sizeof(float));
+    obj.yCoords = (float*)malloc(vSize * sizeof(float));
+    obj.zCoords = (float*)malloc(vSize * sizeof(float));
 
-    obj.faceIndices = (int**)malloc(obj.numFaces * sizeof(int*));
-    obj.faceValencies = (int*)malloc(obj.numFaces * sizeof(int));
+    obj.faceIndices = (int**)malloc(fSize * sizeof(int*));
+    obj.faceValencies = (int*)malloc(fSize * sizeof(int));
 
     int v = 0;
     int f = 0;
-    while (getline(&line, &len, objFile) != -1) {
-        if(len <= 0) {
+    // while (getline(&line, &len, objFile) != -1) {
+    while (fgets(line, len, objFile)) {
+        if(strlen(line) <= 1) {
             continue;
         }
-        if(line[0] == 'v' && line[1] == ' ') {
+        if(line[1] != ' ') {
+            continue;
+        }
+        char start = line[0];
+        // TODO: fix memory leak
+        if(start == 'v') {
+            // printf("%s", line);
+            char* lineToParse = (char*)malloc((strlen(line) + 1) * sizeof(char));
+            char* start = lineToParse;
+            strcpy(lineToParse, line);
             // remove the v
-            strsep(&line, " ");
-            obj.xCoords[v] = atof(strsep(&line, " "));
-            obj.yCoords[v] = atof(strsep(&line, " "));
-            obj.zCoords[v] = atof(strsep(&line, " "));
+            stringSep(&lineToParse, " ");
+            obj.xCoords[v] = atof(stringSep(&lineToParse, " "));
+            obj.yCoords[v] = atof(stringSep(&lineToParse, " "));
+            obj.zCoords[v] = atof(stringSep(&lineToParse, " "));
             v++;
+
+            if(v >= vSize - 4) {
+                vSize *= 2;
+                obj.xCoords =  (float*)realloc(obj.xCoords, vSize * sizeof(float));
+                obj.yCoords =  (float*)realloc(obj.yCoords, vSize * sizeof(float));
+                obj.zCoords =  (float*)realloc(obj.zCoords, vSize * sizeof(float));
+            }
+            free(start);
             // vertex
-        } else if(line[0] == 'f' && line[1] == ' ') {
+        } else if(start == 'f') {            
+            char* lineToParse = (char*)malloc((strlen(line) + 1) * sizeof(char));
+            char* start = lineToParse;
+            strcpy(lineToParse, line);
             // remove the f
-            strsep(&line, " ");
+            stringSep(&lineToParse, " ");
             int currentSize = 4;
             int* indices = (int*)malloc(currentSize * sizeof(int));
             int i = 0;
-            while((token = strsep(&line, " "))) {                
+            while((token = stringSep(&lineToParse, " "))) {    
                 if(i >= currentSize) {
                     currentSize *= 2;
-                    indices = (int*)realloc(indices, currentSize);
+                    indices = (int*)realloc(indices, currentSize * sizeof(int));
                 }
                 indices[i] = atoi(token) - 1;
                 i++;
@@ -87,12 +113,21 @@ ObjFile readObjFromFile(char const* objFileName) {
             }
             obj.faceValencies[f] = i;
             f++;
+            if(f == fSize) {
+                fSize *= 2;
+                obj.faceIndices = (int**)realloc(obj.faceIndices, fSize * sizeof(int*));
+                obj.faceValencies = (int*)realloc(obj.faceValencies, fSize * sizeof(int));
+            }
+            free(start);
         }
     }
+    obj.numVerts = v;
+    obj.numFaces = f;
     if(obj.isQuad == 1) {
         printf("Loaded quad mesh.\n");
     }
     fclose(objFile);
+    free(line);
     return obj;
 }
 

@@ -1,10 +1,12 @@
 #include "kernelInvoker.cuh"
 #include "kernels/quadRefinement.cuh"
+#include "kernels/optimisedQuadRef.cuh"
 #include "util/util.cuh"
 
 #include "stdio.h"
 #include "math.h"
 
+#define USE_OPTIMIZED_KERNEL 1
 
 // swaps pointers
 void meshSwap(DeviceMesh **prevMeshPtr, DeviceMesh **newMeshPtr) {
@@ -40,15 +42,20 @@ DeviceMesh performSubdivision(DeviceMesh* input, DeviceMesh* output, int subdivi
     // each thread covers 1 half edge. Number of half edges can be much greater than blockdim * gridDim. 
     int he = pow(4, d) * h0;
     dim_grid.x = MIN((he - 1) / BLOCK_SIZE + 1, MAX_GRID_SIZE);
-    printf("Actual grid size: %d\n", dim_grid.x);
+    if(USE_OPTIMIZED_KERNEL) {
+      // debugKernel<<<dim_grid, dim_block>>>(in);
+      resetMesh<<<dim_grid, dim_block>>>(in, out);
+      optimisedSubdivide<<<dim_grid, dim_block>>>(in, out);
+      optQuadVertexPoints<<<dim_grid, dim_block>>>(in, out);
+      // debugKernel<<<dim_grid, dim_block>>>(out);
+    } else {
+      resetMesh<<<dim_grid, dim_block>>>(in, out);
+      quadRefineEdges<<<dim_grid, dim_block>>>(in, out);
+      quadFacePoints<<<dim_grid, dim_block>>>(in, out);
+      quadEdgePoints<<<dim_grid, dim_block>>>(in, out);
+      quadVertexPoints<<<dim_grid, dim_block>>>(in, out);
+    }
     // calculate better grid size
-    resetMesh<<<dim_grid, dim_block>>>(in, out);
-
-    quadRefineEdges<<<dim_grid, dim_block>>>(in, out);
-    quadFacePoints<<<dim_grid, dim_block>>>(in, out);
-    quadEdgePoints<<<dim_grid, dim_block>>>(in, out);
-    quadVertexPoints<<<dim_grid, dim_block>>>(in, out);
-    
     // debugKernel<<<dim_grid, dim_block>>>(out);
     // result is in out; after this swap, the result is in in
     meshSwap(&in, &out);
