@@ -3,13 +3,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-// #include <sys/time.h>
+#include <sys/time.h>
 
 #define MIN(A, B) (A > B ? B : A)
 
 typedef struct {
-    // struct timeval startTime;
-    // struct timeval endTime;
+    struct timeval startTime;
+    struct timeval endTime;
 } Timer;
 
 void startTime(Timer* timer);

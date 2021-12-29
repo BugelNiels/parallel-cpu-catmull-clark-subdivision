@@ -104,13 +104,18 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
         // edge points
         float x, y, z;
         // boundary
+
+        int k = in->verts[next(h)];
+        float edgex = (invX + in->xCoords[k]) / 2.0f;
+        float edgey = (invY + in->yCoords[k]) / 2.0f;
+        float edgez = (invZ + in->zCoords[k]) / 2.0f;
         
         if(ht < 0) {
             // TODO: make it not branch divergence
             int k = in->verts[next(h)];
-            x = (invX + in->xCoords[k]) / 2.0f;
-            y = (invY + in->yCoords[k]) / 2.0f;
-            z = (invZ + in->zCoords[k]) / 2.0f;
+            x = edgex;
+            y = edgey;
+            z = edgez;
             // atomic add not necessary for boundaries, but likely outweighs branch divergence penalties        
         } else {
             // average the vertex of this edge and the face point
@@ -123,22 +128,20 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
         atomicAdd(&out->yCoords[j], y);
         atomicAdd(&out->zCoords[j], z);
 
-        // if(ht < 0) {
-        //     // comp swap
-        //     out->xCoords[v] = invX;
-        //     out->yCoords[v] = invY;
-        //     out->zCoords[v] = invZ;
-        // } else {
-        //     float n = valence(h, in);
-        //     float n2 = n * n;
-        //     x = facePointsX[ti] / n2 + .. + ((n - 3) * invX / n) / n2;
-        //     x = (4 * x - facePointsX[ti] + (n - 3) * invX) / n2;
-        //     y = (4 * y - facePointsY[ti] + (n - 3) * invY) / n2;
-        //     z = (4 * z - facePointsZ[ti] + (n - 3) * invZ) / n2;
-        //     atomicAdd(&out->xCoords[v], x);
-        //     atomicAdd(&out->yCoords[v], y);
-        //     atomicAdd(&out->zCoords[v], z);
-        // }
+        float n = valence(h, in);
+        if(ht < 0) {
+            out->xCoords[v] = invX;
+            out->yCoords[v] = invY;
+            out->zCoords[v] = invZ;
+        } else if (n >= 0) {
+            float n2 = n * n;
+            x = (2 * edgex + facePointsX[ti] + (n - 3) * invX) / n2;
+            y = (2 * edgey + facePointsY[ti] + (n - 3) * invY) / n2;
+            z = (2 * edgez + facePointsZ[ti] + (n - 3) * invZ) / n2;
+            atomicAdd(&out->xCoords[v], x);
+            atomicAdd(&out->yCoords[v], y);
+            atomicAdd(&out->zCoords[v], z);
+        }
         
         if(t2 == 0) {
             int ind = vd + face(h);

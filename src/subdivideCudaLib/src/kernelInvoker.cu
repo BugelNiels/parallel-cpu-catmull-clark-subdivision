@@ -46,7 +46,7 @@ DeviceMesh performSubdivision(DeviceMesh* input, DeviceMesh* output, int subdivi
       // debugKernel<<<dim_grid, dim_block>>>(in);
       resetMesh<<<dim_grid, dim_block>>>(in, out);
       optimisedSubdivide<<<dim_grid, dim_block>>>(in, out);
-      optQuadVertexPoints<<<dim_grid, dim_block>>>(in, out);
+      // optQuadVertexPoints<<<dim_grid, dim_block>>>(in, out);
       // debugKernel<<<dim_grid, dim_block>>>(out);
     } else {
       resetMesh<<<dim_grid, dim_block>>>(in, out);
