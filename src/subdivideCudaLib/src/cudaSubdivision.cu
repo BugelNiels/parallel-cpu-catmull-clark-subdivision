@@ -53,12 +53,9 @@ Mesh cudaSubdivide(Mesh* mesh, int subdivisionLevel) {
 	cuda_ret = cudaDeviceSynchronize();
 	cudaErrCheck(cuda_ret, "Unable to sync");
 
-	copyHostToDeviceMesh(mesh, &in, isQuad);
 	
-	cuda_ret = cudaDeviceSynchronize();
-	cudaErrCheck(cuda_ret, "Unable to sync");
 
-	DeviceMesh result_d = performSubdivision(&in, &out, subdivisionLevel, mesh->numHalfEdges);
+	DeviceMesh result_d = performSubdivision(&in, &out, subdivisionLevel, mesh);
 	// device is synced after this call
 	// result is in out
 

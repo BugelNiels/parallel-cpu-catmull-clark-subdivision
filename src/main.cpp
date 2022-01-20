@@ -69,9 +69,10 @@ int main(int argc, char* argv[]) {
   }
   if(numThreads == nullptr) {
     omp_set_num_threads(4);  
-
+    std::cout << "Using 4 threads\n";
   } else {
-    omp_set_num_threads(atoi(numThreads));    
+    omp_set_num_threads(atoi(numThreads)); 
+    std::cout << "Using " << atoi(numThreads) << " threads\n";   
   }
   OBJFile newModel = OBJFile(QString(filename));
   MeshInitializer initializer(&newModel);

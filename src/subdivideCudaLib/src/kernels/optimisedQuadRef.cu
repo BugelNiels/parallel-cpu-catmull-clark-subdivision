@@ -1,19 +1,13 @@
 #include "quadRefinement.cuh"
 #include "../util/util.cuh"
 
-#define WARP_SIZE 32
-#define FACES_PER_BLOCK (BLOCK_SIZE / 4)
-
-// TODO: force inline?
 inline __device__ int next(int h) { return h % 4 == 3 ? h - 3 : h + 1; }
 
 inline __device__ int prev(int h) { return h % 4 == 0 ? h + 3 : h - 1; }
 
 inline __device__ int face(int h) { return h / 4; }
 
-__global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
-    // first BLOCK_SIZE / 4 are the face points
-    // next come .. edge points
+__global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out, int v0) {
     __shared__ float facePointsX[FACES_PER_BLOCK];
     __shared__ float facePointsY[FACES_PER_BLOCK];
     __shared__ float facePointsZ[FACES_PER_BLOCK];
@@ -25,7 +19,10 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
     int ti = threadIdx.x / 4;
     int t2 = threadIdx.x % 4;
 
-    for(int h = blockIdx.x * blockDim.x + threadIdx.x; h < in->numHalfEdges; h += blockDim.x * gridDim.x) {
+    int start = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    for(int h = start; h < in->numHalfEdges; h += stride) {
         // not all threads in the warp execute this, but it should eliminate the need for thread sync
         if(t2 == 0) {
             // reset shared memory
@@ -73,13 +70,11 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
         float edgez = (invZ + in->zCoords[k]) / 2.0f;
         
         if(ht < 0) {
-            // TODO: make it not branch divergence
             x = edgex;
             y = edgey;
-            z = edgez;
-            // atomic add not necessary for boundaries, but likely outweighs branch divergence penalties        
+            z = edgez;      
         } else {
-            // average the vertex of this edge and the face point
+            // average the vertex of this vertex and the face point
             x = (invX + facePointsX[ti]) / 4.0f;
             y = (invY + facePointsY[ti]) / 4.0f;
             z = (invZ + facePointsZ[ti]) / 4.0f;
@@ -89,7 +84,8 @@ __global__ void optimisedSubdivide(DeviceMesh* in, DeviceMesh* out) {
         atomicAdd(&out->yCoords[j], y);
         atomicAdd(&out->zCoords[j], z);
 
-        float n = valence(h, in);
+        // this is pretty awesome trick yes
+        float n = v >= v0 ? 4 : valence(h, in);
         if(ht < 0) {
             out->xCoords[v] = invX;
             out->yCoords[v] = invY;

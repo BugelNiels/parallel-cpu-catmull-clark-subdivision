@@ -147,24 +147,22 @@ __device__ void quadVertexPoint(int h, DeviceMesh* in, DeviceMesh* out) {
 }
 
 __global__ void resetMesh(DeviceMesh* in, DeviceMesh* out) {
-    int numEdges = 2 * in->numEdges + in->numHalfEdges;
-    int numFaces = in->numHalfEdges;
-    int numHalfEdges = in->numHalfEdges * 4;
     int numVerts = in->numVerts + in->numFaces + in->numEdges;
     
-    int h = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
 
-    for(int i = h; i < numVerts; i += stride) {
-        out->xCoords[i] = 0;
-        out->yCoords[i] = 0;
-        out->zCoords[i] = 0;
+    for(int v = i; v < numVerts; v += stride) {
+        out->xCoords[v] = 0;
+        out->yCoords[v] = 0;
+        out->zCoords[v] = 0;
     } 
     
     if(blockIdx.x == 0 && threadIdx.x == 0) {
-        out->numEdges = numEdges;
-        out->numFaces = numFaces;
-        out->numHalfEdges = numHalfEdges;
+        int h = in->numHalfEdges;
+        out->numEdges = 2 * in->numEdges + h;
+        out->numFaces = h;
+        out->numHalfEdges = h * 4;
         out->numVerts = numVerts;
     }
 }
