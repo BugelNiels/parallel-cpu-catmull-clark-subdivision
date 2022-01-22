@@ -8,6 +8,8 @@
 class QuadMesh : public Mesh {
  public:
   using Mesh::Mesh;
+  QuadMesh(int maxHalfEdges, int maxVertices);
+  void resetMesh();
   void subdivideCatmullClark(QuadMesh& mesh) override;
 
  protected:

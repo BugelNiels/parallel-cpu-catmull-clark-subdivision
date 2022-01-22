@@ -4,7 +4,7 @@
 
 void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
-  mesh.resizeBuffers();
+  //  mesh.resizeBuffers();
 
 #pragma omp parallel
   {

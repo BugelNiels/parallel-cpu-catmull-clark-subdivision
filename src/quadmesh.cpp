@@ -1,5 +1,14 @@
 #include "quadmesh.h"
 
+QuadMesh::QuadMesh(int maxHalfEdges, int maxVertices) {
+  twins.resize(maxHalfEdges);
+  verts.resize(maxHalfEdges);
+  edges.resize(maxHalfEdges);
+  vertexCoords.resize(maxVertices);
+}
+
+void QuadMesh::resetMesh() { vertexCoords.fill({0, 0, 0}); }
+
 int QuadMesh::next(int h) { return h % 4 == 3 ? h - 3 : h + 1; }
 
 int QuadMesh::prev(int h) { return h % 4 == 0 ? h + 3 : h - 1; }
@@ -8,7 +17,6 @@ int QuadMesh::face(int h) { return h / 4; }
 
 void QuadMesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
-  mesh.resizeBuffers();
 
 #pragma omp parallel
   {

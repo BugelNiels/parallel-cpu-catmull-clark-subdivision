@@ -6,8 +6,6 @@
 class Subdivider {
  public:
   Subdivider(Mesh* mesh);
-  void subdivideGPU(int subdivisionLevel);
-  double subdivide(int subdivisionLevel, int iterations);
   double subdivide(int subdivisionLevel);
 
   inline Mesh* getBaseMesh() { return baseMesh; }

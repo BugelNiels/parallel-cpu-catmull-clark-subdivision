@@ -39,9 +39,6 @@ FORMS    += mainwindow.ui
 RESOURCES += \
     resources.qrc
 
-LIBS+= -L$$PWD/subdivideCudaLib -lCudaSubdivision
-INCLUDEPATH += "$$PWD/subdivideCudaLib/libheaders"
-
 QMAKE_CXXFLAGS+= -fopenmp -lpthread
 QMAKE_LFLAGS +=  -fopenmp -lpthread
 
