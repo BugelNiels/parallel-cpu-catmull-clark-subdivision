@@ -61,6 +61,7 @@ void MainWindow::on_wireframeCheckBox_toggled(bool checked) {
 void MainWindow::subdivide() {
   double milsecs = subdivider.subdivide(subdivisionLevel);
   Mesh* currentMesh = subdivider.getCurrentMesh();
+
   ui->hdLabelNum->setNum(currentMesh->getNumHalfEdges());
   ui->fdLabelNum->setNum(currentMesh->getNumFaces());
   ui->edLabelNum->setNum(currentMesh->getNumEdges());
@@ -72,7 +73,11 @@ void MainWindow::subdivide() {
 }
 
 void MainWindow::updateBuffers() {
-  ui->MainDisplay->updateBuffers(*subdivider.getCurrentMesh());
+  if (subdivisionLevel == 0) {
+    ui->MainDisplay->updateBuffers(*subdivider.getBaseMesh());
+  } else {
+    ui->MainDisplay->updateBuffers(*subdivider.getCurrentMesh());
+  }
 }
 
 void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }
@@ -80,6 +85,9 @@ void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }
 void MainWindow::on_requireApplyCheckBox_toggled(bool checked) {
   ui->MainDisplay->settings.requireApply = checked;
   ui->applySubdivisionButton->setEnabled(checked);
+  if (!checked) {
+    subdivide();
+  }
 }
 
 void MainWindow::on_importDefaultButton_pressed() {

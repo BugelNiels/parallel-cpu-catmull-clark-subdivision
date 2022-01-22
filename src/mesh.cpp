@@ -65,8 +65,8 @@ int Mesh::valence(int h) {
 
 void Mesh::extractAttributes() {
   polyIndices.clear();
-  // TODO: reserve at some point
-
+  int fd = numHalfEdges / 4;
+  polyIndices.reserve(fd + fd / 4);
   // half edges that belong to a face are stored contiguously
   for (int h = 0; h < numHalfEdges; ++h) {
     if (h > 0 && face(h) != face(h - 1)) {
@@ -78,6 +78,7 @@ void Mesh::extractAttributes() {
 
   // calculate vector of face normals
   QVector<QVector3D> faceNormals;
+  faceNormals.reserve(numFaces);
   int faceIdx = -1;
   for (int h = 0; h < numHalfEdges; ++h) {
     if (face(h) != faceIdx) {

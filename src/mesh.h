@@ -75,7 +75,7 @@ class Mesh {
   void smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
   void boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
   void smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n);
-  void boundaryVertexPoint(QuadMesh& mesh, int h);
+  void boundaryVertexPoint(QuadMesh& mesh, int h, int vd, int fd);
 
  private:
   int cycleLength(int h);
