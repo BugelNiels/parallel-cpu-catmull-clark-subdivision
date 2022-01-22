@@ -46,13 +46,13 @@ double Subdivider::subdivide(int subdivisionLevel) {
   long long time = timer.nsecsElapsed();
   double milsecs = time / 1000000.0;
 
+  currentMesh = subdivisionLevel == 1 ? in : out;
   std::cout << "\n---\nTotal time elapsed for " << subdivisionLevel << " : "
             << milsecs << " milliseconds\n\n";
   std::cout << "Faces : " << currentMesh->getNumFaces() << "\n";
   std::cout << "Half Edges : " << currentMesh->getNumHalfEdges() << "\n";
   std::cout << "Vertices : " << currentMesh->getNumVerts() << "\n";
   std::cout << "Edges : " << currentMesh->getNumEdges() << "\n\n";
-  currentMesh = subdivisionLevel == 1 ? in : out;
   return milsecs;
 }
 
