@@ -18,3 +18,4 @@ src/subdivideCudaLib/result.obj
 **/*.exp
 **/*.lib
 **/*.pdb
+**/timings.txt
