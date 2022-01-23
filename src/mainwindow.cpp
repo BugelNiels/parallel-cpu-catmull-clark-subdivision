@@ -33,6 +33,7 @@ void MainWindow::importOBJ(QString filename) {
   ui->v0LabelNum->setNum(baseMesh->getNumVerts());
 
   subdivisionLevel = 0;
+  ui->SubdivSteps->setValue(0);
 
   updateBuffers();
   ui->MainDisplay->settings.modelLoaded = true;
@@ -60,7 +61,12 @@ void MainWindow::on_wireframeCheckBox_toggled(bool checked) {
 
 void MainWindow::subdivide() {
   double milsecs = subdivider.subdivide(subdivisionLevel);
-  Mesh* currentMesh = subdivider.getCurrentMesh();
+  Mesh* currentMesh;
+  if (subdivisionLevel == 0) {
+    currentMesh = subdivider.getBaseMesh();
+  } else {
+    currentMesh = subdivider.getCurrentMesh();
+  }
 
   ui->hdLabelNum->setNum(currentMesh->getNumHalfEdges());
   ui->fdLabelNum->setNum(currentMesh->getNumFaces());

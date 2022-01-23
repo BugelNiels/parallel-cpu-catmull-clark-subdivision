@@ -7,9 +7,9 @@
  */
 Mesh::Mesh() {}
 
-Mesh::Mesh(QVector<QVector3D> vertCoords, QVector<int> twins,
-           QVector<int> nexts, QVector<int> prevs, QVector<int> verts,
-           QVector<int> edges, QVector<int> faces, int nEdges) {
+Mesh::Mesh(QVector<QVector3D>& vertCoords, QVector<int>& twins,
+           QVector<int>& nexts, QVector<int>& prevs, QVector<int>& verts,
+           QVector<int>& edges, QVector<int>& faces, int nEdges) {
   vertexCoords = vertCoords;
   this->twins = twins;
   this->nexts = nexts;

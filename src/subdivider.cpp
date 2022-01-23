@@ -20,6 +20,7 @@ double Subdivider::subdivide(int subdivisionLevel) {
   if (currentMesh != nullptr) {
     // prevent memory leak
     free(currentMesh);
+    currentMesh = nullptr;
   }
   int finalNumHalfEdges =
       pow(4, subdivisionLevel) * baseMesh->getNumHalfEdges();
@@ -58,19 +59,4 @@ double Subdivider::subdivide(int subdivisionLevel) {
   std::cout << "Vertices : " << currentMesh->getNumVerts() << "\n";
   std::cout << "Edges : " << currentMesh->getNumEdges() << "\n\n";
   return milsecs;
-}
-
-void Subdivider::singleSubdivisionStep(int k) {
-  QuadMesh* newMesh = new QuadMesh();
-  QElapsedTimer timer;
-  timer.start();
-  currentMesh->subdivideCatmullClark(*newMesh);
-  /* Display info to user */
-  long long time = timer.nsecsElapsed();
-  std::cout << "Subdivision time at level " << k + 1 << " is "
-            << time / 1000000.0 << " milliseconds\n";
-  if (currentMesh != baseMesh) {
-    delete currentMesh;
-  }
-  currentMesh = newMesh;
 }

@@ -4,7 +4,6 @@
 
 void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
-  //  mesh.resizeBuffers();
 
 #pragma omp parallel
   {
@@ -25,6 +24,7 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
       if (twin(h) < 0) {
         boundaryEdgePoint(mesh, h, numVerts, numFaces);
       } else if (twin(h) > h) {
+        // By doing both of these here, we do not need atomic adds.
         smoothEdgePoint(mesh, h, numVerts, numFaces);
         smoothEdgePoint(mesh, twin(h), numVerts, numFaces);
       }

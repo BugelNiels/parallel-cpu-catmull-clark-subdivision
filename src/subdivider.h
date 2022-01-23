@@ -13,7 +13,6 @@ class Subdivider {
   inline QuadMesh* getCurrentMesh() { return currentMesh; }
 
  private:
-  void singleSubdivisionStep(int k);
   Mesh* baseMesh;
   QuadMesh* currentMesh = nullptr;
 };

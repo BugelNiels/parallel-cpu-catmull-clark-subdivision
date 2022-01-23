@@ -14,10 +14,9 @@ class QuadMesh;
 class Mesh {
  public:
   Mesh();
-  // TODO: refactor
-  Mesh(QVector<QVector3D> vertCoords, QVector<int> twins, QVector<int> nexts,
-       QVector<int> prevs, QVector<int> verts, QVector<int> edges,
-       QVector<int> faces, int nEdges);
+  Mesh(QVector<QVector3D>& vertCoords, QVector<int>& twins, QVector<int>& nexts,
+       QVector<int>& prevs, QVector<int>& verts, QVector<int>& edges,
+       QVector<int>& faces, int nEdges);
   virtual ~Mesh();
 
   // Getters
@@ -71,7 +70,7 @@ class Mesh {
   void resizeBuffers();
 
   void edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed);
-  virtual void facePoint(QuadMesh& mesh, int h, int vd);
+  void facePoint(QuadMesh& mesh, int h, int vd);
   void smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
   void boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
   void smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n);
