@@ -4,12 +4,8 @@
 #include <iostream>
 
 #include "math.h"
-#include "quadmesh.h"
 
-Subdivider::Subdivider(Mesh* mesh) {
-  baseMesh = mesh;
-  currentMesh = baseMesh;
-}
+Subdivider::Subdivider(Mesh* mesh) { baseMesh = mesh; }
 
 void meshSwap(QuadMesh** prevMeshPtr, QuadMesh** newMeshPtr) {
   QuadMesh* temp = *prevMeshPtr;
@@ -18,6 +14,13 @@ void meshSwap(QuadMesh** prevMeshPtr, QuadMesh** newMeshPtr) {
 }
 
 double Subdivider::subdivide(int subdivisionLevel) {
+  if (subdivisionLevel < 1) {
+    return 0.0;
+  }
+  if (currentMesh != nullptr) {
+    // prevent memory leak
+    free(currentMesh);
+  }
   int finalNumHalfEdges =
       pow(4, subdivisionLevel) * baseMesh->getNumHalfEdges();
   int v1 = baseMesh->getNumVerts() + baseMesh->getNumFaces() +
@@ -46,7 +49,8 @@ double Subdivider::subdivide(int subdivisionLevel) {
   long long time = timer.nsecsElapsed();
   double milsecs = time / 1000000.0;
 
-  currentMesh = subdivisionLevel == 1 ? in : out;
+  currentMesh = in;
+  free(out);
   std::cout << "\n---\nTotal time elapsed for " << subdivisionLevel << " : "
             << milsecs << " milliseconds\n\n";
   std::cout << "Faces : " << currentMesh->getNumFaces() << "\n";

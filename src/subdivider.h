@@ -2,6 +2,7 @@
 #define SUBDIVIDER_H
 
 #include "mesh.h"
+#include "quadmesh.h"
 
 class Subdivider {
  public:
@@ -9,12 +10,12 @@ class Subdivider {
   double subdivide(int subdivisionLevel);
 
   inline Mesh* getBaseMesh() { return baseMesh; }
-  inline Mesh* getCurrentMesh() { return currentMesh; }
+  inline QuadMesh* getCurrentMesh() { return currentMesh; }
 
  private:
   void singleSubdivisionStep(int k);
   Mesh* baseMesh;
-  Mesh* currentMesh;
+  QuadMesh* currentMesh = nullptr;
 };
 
 #endif  // SUBDIVIDER_H

@@ -34,11 +34,11 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
 #pragma omp for
     for (int h = 0; h < numHalfEdges; ++h) {
       // val = -1 if boundary vertex
-      float val = valence(h);
-      if (val < 0) {
-        boundaryVertexPoint(mesh, h);
-      } else {
-        smoothVertexPoint(mesh, h, numVerts, numFaces, val);
+      float n = valence(h);
+      if (n > 0) {
+        smoothVertexPoint(mesh, h, numVerts, numFaces, n);
+      } else if (twin(h) < 0) {
+        boundaryVertexPoint(mesh, h, numVerts, numFaces);
       }
     }
   }
@@ -131,7 +131,14 @@ void Mesh::smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n) {
   atomicAdd(mesh.vertexCoords[v], c);
 }
 
-void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h) {
+void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h, int vd, int fd) {
   int v = vert(h);
-  mesh.vertexCoords[v] = vertexCoords.at(v);
+  int j = vd + fd + edge(h);
+  QVector3D edgePoint = mesh.vertexCoords.at(j);
+  QVector3D c = (edgePoint + vertexCoords.at(v)) / 4.0f;
+  atomicAdd(mesh.vertexCoords[v], c);
+
+  int vnext = vert(next(h));
+  QVector3D c2 = (edgePoint + vertexCoords.at(vnext)) / 4.0f;
+  atomicAdd(mesh.vertexCoords[vnext], c2);
 }

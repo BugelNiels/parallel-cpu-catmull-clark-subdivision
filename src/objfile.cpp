@@ -36,24 +36,19 @@ OBJFile::OBJFile(QString fileName) {
       values = currentLine.split(" ");
 
       if (values[0] == "v") {
-        // qDebug() << "Vertex coords";
         // Only x, y and z. If there's a w value (homogenous coordinates),
         // ignore it.
         vertexCoords.append(QVector3D(values[1].toFloat(), values[2].toFloat(),
                                       values[3].toFloat()));
       } else if (values[0] == "vt") {
-        // qDebug() << "Texture coords";
         // Only u and v. If there's a w value (barycentric coordinates), ignore
         // it, it can be retrieved from 1-u-v.
         textureCoords.append(
             QVector2D(values[1].toFloat(), values[2].toFloat()));
       } else if (values[0] == "vn") {
-        // qDebug() << "Vertex normal";
         vertexNormals.append(QVector3D(values[1].toFloat(), values[2].toFloat(),
                                        values[3].toFloat()));
       } else if (values[0] == "f") {
-        // qDebug() << "Face";
-
         QVector<int> faceCoordsIndices;
         QVector<int> faceTexIndices;
         QVector<int> faceNormalIndices;

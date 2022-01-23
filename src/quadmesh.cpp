@@ -51,11 +51,11 @@ void QuadMesh::subdivideCatmullClark(QuadMesh& mesh) {
 #pragma omp for
     for (int h = 0; h < numHalfEdges; ++h) {
       // val = -1 if boundary vertex
-      float val = valence(h);
-      if (val < 0) {
-        boundaryVertexPoint(mesh, h);
-      } else {
-        smoothVertexPoint(mesh, h, numVerts, numFaces, val);
+      float n = valence(h);
+      if (n > 0) {
+        smoothVertexPoint(mesh, h, numVerts, numFaces, n);
+      } else if (twin(h) < 0) {
+        boundaryVertexPoint(mesh, h, numVerts, numFaces);
       }
     }
   }
