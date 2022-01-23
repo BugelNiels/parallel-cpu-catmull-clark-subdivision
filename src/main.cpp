@@ -73,12 +73,15 @@ int main(int argc, char* argv[]) {
     omp_set_num_threads(atoi(numThreads));
     std::cout << "Using " << atoi(numThreads) << " threads\n";
   }
-  OBJFile newModel = OBJFile(QString(filename));
+  QString filePath = "models/" + QString(filename) + ".obj";
+  OBJFile newModel = OBJFile(filePath);
   MeshInitializer initializer(&newModel);
   Mesh* baseMesh = initializer.constructHalfEdgeMesh();
   Subdivider subdivider(baseMesh);
   std::cout << "subdividing on CPU\n";
-  subdivider.subdivide(atoi(subdivLevel));
+  double milsecs = subdivider.subdivide(atoi(subdivLevel));
+  FILE* timingsFile = fopen("timings.txt", "a");
+  fprintf(timingsFile, "%lf\n", milsecs);
   std::cout << "Subdivision complete!\n";
   return 0;
 }

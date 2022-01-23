@@ -78,8 +78,6 @@ OBJFile::OBJFile(QString fileName) {
         if (k - 1 != 4) {
           isQuad = false;
         }
-      } else {
-        qDebug() << " * Line contents ignored," << currentLine;
       }
     }
     newModel.close();
