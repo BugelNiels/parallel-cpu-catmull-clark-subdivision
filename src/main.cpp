@@ -50,6 +50,7 @@ int startGUI(int argc, char* argv[]) {
   QSurfaceFormat::setDefaultFormat(glFormat);
 
   MainWindow w;
+  w.setWindowTitle("Parallel CPU Catmull-Clark Subdivision");
   w.show();
   return a.exec();
 }
