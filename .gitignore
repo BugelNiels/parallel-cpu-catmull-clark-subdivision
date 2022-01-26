@@ -19,3 +19,4 @@ src/subdivideCudaLib/result.obj
 **/*.lib
 **/*.pdb
 **/timings.txt
+**/cpuSubdivide
