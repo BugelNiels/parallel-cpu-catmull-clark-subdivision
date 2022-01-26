@@ -9,7 +9,8 @@
 class QuadMesh;
 
 /**
- * @brief The Mesh class contains all the information for a mesh
+ * @brief The Mesh class contains all the information for a mesh. Uses a
+ * pointerless half-edge implementation.
  */
 class Mesh {
  public:
@@ -67,14 +68,13 @@ class Mesh {
   int valence(int h);
 
   void recalculateSizes(QuadMesh& mesh);
-  void resizeBuffers();
 
-  void edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed);
-  void facePoint(QuadMesh& mesh, int h, int vd);
-  void smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
-  void boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd);
-  void smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n);
-  void boundaryVertexPoint(QuadMesh& mesh, int h, int vd, int fd);
+  void edgeRefinement(QuadMesh& mesh, int h);
+  void facePoint(QuadMesh& mesh, int h);
+  void interiorEdgePoint(QuadMesh& mesh, int h);
+  void boundaryEdgePoint(QuadMesh& mesh, int h);
+  void interiorVertexPoint(QuadMesh& mesh, int h, float n);
+  void boundaryVertexPoint(QuadMesh& mesh, int h);
 
  private:
   int cycleLength(int h);

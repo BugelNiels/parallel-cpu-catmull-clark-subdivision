@@ -4,26 +4,42 @@
 
 #include "quadmesh.h"
 
+/**
+ * @brief MeshInitializer::MeshInitializer Initialises a pointerless half-edge
+ * mesh from an OBJFile
+ * @param loadedOBJFile OBJFile to create a mesh from
+ */
 MeshInitializer::MeshInitializer(OBJFile* loadedOBJFile) {
   loadedObj = loadedOBJFile;
 }
 
-QPair<int, int> createUndirectedEdge(int h1, int h2) {
+/**
+ * @brief createUndirectedEdge Creates an undirected edge from two vertex
+ * indices.
+ * @param v1 First vertex index
+ * @param v2 Second vertex index
+ * @return A pair of v1-v2. Two indices always produce the same pair, regardless
+ * of their ordering.
+ */
+QPair<int, int> createUndirectedEdge(int v1, int v2) {
   // to ensure that edges are consistent, always put the lower index first
-  if (h1 > h2) {
-    return QPair<int, int>(h2, h1);
+  if (v1 > v2) {
+    return QPair<int, int>(v2, v1);
   }
-  return QPair<int, int>(h1, h2);
+  return QPair<int, int>(v1, v2);
 }
 
+/**
+ * @brief MeshInitializer::constructHalfEdgeMesh Constructs a half-edge mesh
+ * @return A pointerless half-edge mesh.
+ */
 Mesh* MeshInitializer::constructHalfEdgeMesh() {
-  // half edge index
   int h = 0;
   // loop over every face
   for (int faceIdx = 0; faceIdx < loadedObj->faceCoordInd.size(); ++faceIdx) {
     QVector<int> faceIndices = loadedObj->faceCoordInd[faceIdx];
-    // each face will end up with a number of half edges equal to its number of
-    // faces
+    // each face ends up with a number of half edges equal to its number of
+    // vertices
     for (int i = 0; i < faceIndices.size(); ++i) {
       addHalfEdge(h, faceIdx, faceIndices, i);
       h++;
@@ -40,11 +56,17 @@ Mesh* MeshInitializer::constructHalfEdgeMesh() {
                   faces, edgeList.size());
 }
 
-void MeshInitializer::addHalfEdge(int h, int faceIdx, QVector<int> faceIndices,
+/**
+ * @brief MeshInitializer::addHalfEdge Adds half-edge properties to the mesh
+ * @param h The half-edge index
+ * @param faceIdx Index of the face the half-edge belongs to
+ * @param vertIndices The vertex indices of this face
+ * @param i Index in vertIndices this half-edge originates from
+ */
+void MeshInitializer::addHalfEdge(int h, int faceIdx, QVector<int> vertIndices,
                                   int i) {
-  int faceValency = faceIndices.size();
-  // vert
-  int vertIdx = faceIndices[i];
+  int faceValency = vertIndices.size();
+  int vertIdx = vertIndices[i];
   verts.append(vertIdx);
 
   // prev and next
@@ -62,13 +84,19 @@ void MeshInitializer::addHalfEdge(int h, int faceIdx, QVector<int> faceIndices,
 
   // twin
   twins.append(-1);
-  int nextVertIdx = faceIndices[(i + 1) % faceValency];
+  int nextVertIdx = vertIndices[(i + 1) % faceValency];
   setEdgeAndTwins(h, nextVertIdx);
 
   // face
   faces.append(faceIdx);
 }
 
+/**
+ * @brief MeshInitializer::setEdgeAndTwins Sets the edge and twin properties of
+ * the half-edge
+ * @param h Half-edge index
+ * @param vertIdx2 Index of the vertex h points to
+ */
 void MeshInitializer::setEdgeAndTwins(int h, int vertIdx2) {
   int vertIdx1 = verts[h];
   QPair<int, int> currentEdge = createUndirectedEdge(vertIdx1, vertIdx2);

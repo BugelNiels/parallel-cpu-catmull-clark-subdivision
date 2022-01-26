@@ -5,6 +5,10 @@
 
 #include "mesh.h"
 
+/**
+ * @brief The QuadMesh class extends a mesh and contains optimized method
+ * specific to quad meshes
+ */
 class QuadMesh : public Mesh {
  public:
   using Mesh::Mesh;

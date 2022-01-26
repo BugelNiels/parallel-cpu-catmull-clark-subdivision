@@ -30,11 +30,7 @@ class MainWindow : public QMainWindow {
   void on_wireframeCheckBox_toggled(bool checked);
 
   void on_applySubdivisionButton_pressed();
-
   void on_requireApplyCheckBox_toggled(bool checked);
-
-  void on_importDefaultButton_pressed();
-
   void on_showNormalsCheckBox_toggled(bool checked);
 
  private:

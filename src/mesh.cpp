@@ -7,6 +7,18 @@
  */
 Mesh::Mesh() {}
 
+/**
+ * @brief Mesh::Mesh Creates a pointerless half-edge mesh with the provided
+ * information
+ * @param vertCoords Vertex coordinates
+ * @param twins Array of twin half-edge indices. Size: number of half edges
+ * @param nexts Array of next half-edge indices. Size: number of half edges
+ * @param prevs Array of previous half-edge indices. Size: number of half edges
+ * @param verts Array of vertex indices. Size: number of half edges
+ * @param edges Array of edge indices. Size: number of half edges
+ * @param faces Array of face indices. Size: number of half edges
+ * @param nEdges Number of edges in the mesh
+ */
 Mesh::Mesh(QVector<QVector3D>& vertCoords, QVector<int>& twins,
            QVector<int>& nexts, QVector<int>& prevs, QVector<int>& verts,
            QVector<int>& edges, QVector<int>& faces, int nEdges) {
@@ -29,19 +41,60 @@ Mesh::Mesh(QVector<QVector3D>& vertCoords, QVector<int>& twins,
  */
 Mesh::~Mesh() {}
 
+/**
+ * @brief Mesh::twin Retrieves the index of the twin of the provided half-edge
+ * index for a non-quad mesh.
+ * @param h Half-edge index to retrieve the twin index of
+ * @return Twin half-edge index of h
+ */
 int Mesh::twin(int h) { return twins.at(h); }
 
+/**
+ * @brief Mesh::vert Retrieves the index of the vertex that the provided
+ * half-edge index originates from for a non-quad mesh.
+ * @param h Half-edge index to retrieve the vertex index of
+ * @return Vertex index of h
+ */
 int Mesh::vert(int h) { return verts.at(h); }
 
+/**
+ * @brief Mesh::edge Retrieves the index of the edge that the provided half-edge
+ * index belongs to for a non-quad mesh.
+ * @param h Half-edge index to find the edge index of
+ * @return Edge index of h
+ */
 int Mesh::edge(int h) { return edges.at(h); }
 
+/**
+ * @brief Mesh::next Retrieves the index of the next half-edge for a non-quad
+ * mesh.
+ * @param h Half-edge index to find the next index of
+ * @return Next half-edge index of h
+ */
 int Mesh::next(int h) { return nexts.at(h); }
 
+/**
+ * @brief Mesh::prev Retrieves the index of the previous half-edge for a
+ * non-quad mesh.
+ * @param h Half-edge index to find the previous index of
+ * @return Previous half-edge index of h
+ */
 int Mesh::prev(int h) { return prevs.at(h); }
 
+/**
+ * @brief Mesh::face Retrieves the index of the face the provided half-edge
+ * index belongs to in a non-quad mesh.
+ * @param h Half-edge index to find the face index of
+ * @return Face index of h
+ */
 int Mesh::face(int h) { return faces.at(h); }
 
-// returns -1 if it is a boundary vertex
+/**
+ * @brief Mesh::valence Determines the valence of VERT(h). Returns -1 if VERT(h)
+ * is a boundary vertex.
+ * @param h A half-edge that originates from VERT(h)
+ * @return The valence of VERT(h). -1 if boundary vertex
+ */
 int Mesh::valence(int h) {
   int ht = twin(h);
   if (ht < 0) {
@@ -50,9 +103,6 @@ int Mesh::valence(int h) {
   int n = 1;
   int hp = next(ht);
   while (hp != h) {
-    if (hp < 0) {
-      return -1;
-    }
     ht = twin(hp);
     if (ht < 0) {
       return -1;
@@ -63,6 +113,10 @@ int Mesh::valence(int h) {
   return n;
 }
 
+/**
+ * @brief Mesh::extractAttributes Extracts attributes so that these can be used
+ * for drawing.
+ */
 void Mesh::extractAttributes() {
   polyIndices.clear();
   int fd = numHalfEdges / 4;

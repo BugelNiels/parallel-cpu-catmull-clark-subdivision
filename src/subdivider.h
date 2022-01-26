@@ -4,6 +4,10 @@
 #include "mesh.h"
 #include "quadmesh.h"
 
+/**
+ * @brief The Subdivider class is responsible for subdividing a given mesh a
+ * number of times and providing a summary of this process.
+ */
 class Subdivider {
  public:
   Subdivider(Mesh* mesh);
@@ -15,6 +19,8 @@ class Subdivider {
  private:
   Mesh* baseMesh;
   QuadMesh* currentMesh = nullptr;
+  int getNumberOfVertsAtLevel(int subdivisionLevel);
+  void printSummary(int subdivisionLevel, double milsecs);
 };
 
 #endif  // SUBDIVIDER_H

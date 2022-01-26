@@ -1,7 +1,13 @@
 #include "mesh.h"
 #include "omp.h"
 #include "quadmesh.h"
+#include "util.h"
 
+/**
+ * @brief Mesh::subdivideCatmullClark Performs a single Catmull-Clark
+ * subdivision step and saves the result in the provided argument mesh.
+ * @param mesh The mesh to store the result of this subdivision step in.
+ */
 void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
   recalculateSizes(mesh);
 
@@ -10,23 +16,23 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
 // Half Edge Refinement Rules
 #pragma omp for nowait
     for (int h = 0; h < numHalfEdges; ++h) {
-      edgeRefinement(mesh, h, numVerts, numFaces, numEdges);
+      edgeRefinement(mesh, h);
     }
 // Face points
 #pragma omp for
     for (int h = 0; h < numHalfEdges; ++h) {
-      facePoint(mesh, h, numVerts);
+      facePoint(mesh, h);
     }
 
 // Edge points
 #pragma omp for
     for (int h = 0; h < numHalfEdges; ++h) {
       if (twin(h) < 0) {
-        boundaryEdgePoint(mesh, h, numVerts, numFaces);
+        boundaryEdgePoint(mesh, h);
       } else if (twin(h) > h) {
         // By doing both of these here, we do not need atomic adds.
-        smoothEdgePoint(mesh, h, numVerts, numFaces);
-        smoothEdgePoint(mesh, twin(h), numVerts, numFaces);
+        interiorEdgePoint(mesh, h);
+        interiorEdgePoint(mesh, twin(h));
       }
     }
 
@@ -36,14 +42,19 @@ void Mesh::subdivideCatmullClark(QuadMesh& mesh) {
       // val = -1 if boundary vertex
       float n = valence(h);
       if (n > 0) {
-        smoothVertexPoint(mesh, h, numVerts, numFaces, n);
+        interiorVertexPoint(mesh, h, n);
       } else if (twin(h) < 0) {
-        boundaryVertexPoint(mesh, h, numVerts, numFaces);
+        boundaryVertexPoint(mesh, h);
       }
     }
   }
 }
 
+/**
+ * @brief Mesh::cycleLength Determines the number of edges a face has.
+ * @param h A half-edge index in the face of which to determine the cycle length
+ * @return Cycle length of face(h)
+ */
 int Mesh::cycleLength(int h) {
   int n = 1;
   int hp = next(h);
@@ -54,6 +65,11 @@ int Mesh::cycleLength(int h) {
   return n;
 }
 
+/**
+ * @brief Mesh::recalculateSizes Calculate the sizes at step d+1 based on the
+ * mesh at d
+ * @param mesh The for which to recalculate the sizes
+ */
 void Mesh::recalculateSizes(QuadMesh& mesh) {
   mesh.numEdges = 2 * numEdges + numHalfEdges;
   mesh.numFaces = numHalfEdges;
@@ -61,17 +77,15 @@ void Mesh::recalculateSizes(QuadMesh& mesh) {
   mesh.numVerts = numVerts + numFaces + numEdges;
 }
 
-void Mesh::resizeBuffers() {
-  twins.resize(numHalfEdges);
-  edges.resize(numHalfEdges);
-  verts.resize(numHalfEdges);
-  vertexCoords.resize(numVerts);
-}
-
-void Mesh::edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed) {
+/**
+ * @brief Mesh::edgeRefinement Topology refinement of a single half-edge.
+ * Generates 4 new half-edges.
+ * @param mesh Mesh in which to save the topology changes
+ * @param h Half-edge index
+ */
+void Mesh::edgeRefinement(QuadMesh& mesh, int h) {
   int hp = prev(h);
 
-  // For boundaries
   int ht = twin(h);
   mesh.twins[4 * h] = ht < 0 ? -1 : 4 * next(ht) + 3;
   mesh.twins[4 * h + 1] = 4 * next(h) + 2;
@@ -79,61 +93,83 @@ void Mesh::edgeRefinement(QuadMesh& mesh, int h, int vd, int fd, int ed) {
   mesh.twins[4 * h + 3] = 4 * twin(hp);
 
   mesh.verts[4 * h] = vert(h);
-  mesh.verts[4 * h + 1] = vd + fd + edge(h);
-  mesh.verts[4 * h + 2] = vd + face(h);
-  mesh.verts[4 * h + 3] = vd + fd + edge(hp);
+  mesh.verts[4 * h + 1] = numVerts + numFaces + edge(h);
+  mesh.verts[4 * h + 2] = numVerts + face(h);
+  mesh.verts[4 * h + 3] = numVerts + numFaces + edge(hp);
 
   mesh.edges[4 * h] = h > ht ? 2 * edge(h) : 2 * edge(h) + 1;
-  mesh.edges[4 * h + 1] = 2 * ed + h;
-  mesh.edges[4 * h + 2] = 2 * ed + hp;
+  mesh.edges[4 * h + 1] = 2 * numEdges + h;
+  mesh.edges[4 * h + 2] = 2 * numEdges + hp;
   mesh.edges[4 * h + 3] = hp > twin(hp) ? 2 * edge(hp) + 1 : 2 * edge(hp);
 }
 
-inline void atomicAdd(QVector3D& vecA, const QVector3D& vecB) {
-  for (int k = 0; k < 3; ++k) {
-    float& a = vecA[k];
-    const float b = vecB[k];
-#pragma omp atomic
-    a += b;
-  }
-}
-
-void Mesh::facePoint(QuadMesh& mesh, int h, int vd) {
+/**
+ * @brief Mesh::facePoint Calculates the contribution of the half-edge to its
+ * face point.
+ * @param mesh Mesh the face point is in
+ * @param h Half-edge index
+ */
+void Mesh::facePoint(QuadMesh& mesh, int h) {
   float m = cycleLength(h);
   int v = vert(h);
-  int i = vd + face(h);
+  int i = numVerts + face(h);
   QVector3D c = vertexCoords.at(v) / m;
   atomicAdd(mesh.vertexCoords[i], c);
 }
 
-void Mesh::smoothEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
+/**
+ * @brief Mesh::interiorEdgePoint Calculates the contribution of this half-edge
+ * to its edge point. Edge point should not lie on boundary
+ * @param mesh Mesh the edge point is in
+ * @param h Half-edge index
+ */
+void Mesh::interiorEdgePoint(QuadMesh& mesh, int h) {
   int v = vert(h);
-  int i = vd + face(h);
-  int j = vd + fd + edge(h);
+  int i = numVerts + face(h);
+  int j = numVerts + numFaces + edge(h);
   QVector3D c = (vertexCoords.at(v) + mesh.vertexCoords.at(i)) / 4.0f;
   mesh.vertexCoords[j] += c;
 }
 
-void Mesh::boundaryEdgePoint(QuadMesh& mesh, int h, int vd, int fd) {
+/**
+ * @brief Mesh::boundaryEdgePoint Calculates the contribution of this half-edge
+ * to its edge point. Edge point should lie on boundary
+ * @param mesh Mesh the edge point is in
+ * @param h Half-edge index
+ */
+void Mesh::boundaryEdgePoint(QuadMesh& mesh, int h) {
   int v = vert(h);
   int vnext = vert(next(h));
-  int j = vd + fd + edge(h);
+  int j = numVerts + numFaces + edge(h);
   mesh.vertexCoords[j] = (vertexCoords.at(v) + vertexCoords.at(vnext)) / 2.0f;
 }
 
-void Mesh::smoothVertexPoint(QuadMesh& mesh, int h, int vd, int fd, float n) {
+/**
+ * @brief Mesh::interiorVertexPoint Calculates the contribution of this
+ * half-edge to its vertex point. Vertex point should not lie on boundary
+ * @param mesh Mesh the vertex point is in
+ * @param h Half-edge index
+ * @param n Valence of the interior vertex
+ */
+void Mesh::interiorVertexPoint(QuadMesh& mesh, int h, float n) {
   int v = vert(h);
-  int i = vd + face(h);
-  int j = vd + fd + edge(h);
+  int i = numVerts + face(h);
+  int j = numVerts + numFaces + edge(h);
   QVector3D c = (4 * mesh.vertexCoords.at(j) - mesh.vertexCoords.at(i) +
                  (n - 3) * vertexCoords.at(v)) /
                 (n * n);
   atomicAdd(mesh.vertexCoords[v], c);
 }
 
-void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h, int vd, int fd) {
+/**
+ * @brief Mesh::boundaryVertexPoint Calculates the contribution of this
+ * half-edge to its vertex point. Vertex point should lie boundary
+ * @param mesh Mesh the vertex point is in
+ * @param h Half-edge index
+ */
+void Mesh::boundaryVertexPoint(QuadMesh& mesh, int h) {
   int v = vert(h);
-  int j = vd + fd + edge(h);
+  int j = numVerts + numFaces + edge(h);
   QVector3D edgePoint = mesh.vertexCoords.at(j);
   QVector3D c = (edgePoint + vertexCoords.at(v)) / 4.0f;
   atomicAdd(mesh.vertexCoords[v], c);

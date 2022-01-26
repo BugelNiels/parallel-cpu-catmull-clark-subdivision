@@ -76,9 +76,9 @@ QGroupBox::title {
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>90</y>
+         <y>60</y>
          <width>181</width>
-         <height>181</height>
+         <height>211</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -86,13 +86,6 @@ QGroupBox::title {
          <widget class="QCheckBox" name="wireframeCheckBox">
           <property name="text">
            <string>Wireframe</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="requireApplyCheckBox">
-          <property name="text">
-           <string>Require Apply</string>
           </property>
          </widget>
         </item>
@@ -112,6 +105,13 @@ QGroupBox::title {
         </item>
         <item>
          <widget class="QSpinBox" name="SubdivSteps"/>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="requireApplyCheckBox">
+          <property name="text">
+           <string>Require Apply</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="applySubdivisionButton">
@@ -160,19 +160,6 @@ QGroupBox::title {
          <string/>
         </property>
        </widget>
-      </widget>
-      <widget class="QPushButton" name="importDefaultButton">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>60</y>
-         <width>181</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Import Default</string>
-       </property>
       </widget>
       <widget class="QGroupBox" name="groupBox">
        <property name="geometry">

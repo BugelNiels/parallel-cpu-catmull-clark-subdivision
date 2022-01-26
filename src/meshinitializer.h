@@ -7,6 +7,9 @@
 #include "mesh.h"
 #include "objfile.h"
 
+/**
+ * @brief The MeshInitializer class initializes meshes from OBJFiles
+ */
 class MeshInitializer {
  public:
   MeshInitializer(OBJFile* loadedOBJFile);
