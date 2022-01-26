@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = cpuSubdivide
 TEMPLATE = app
 
+CONFIG += release
+
 release: DESTDIR = build/
 debug:   DESTDIR = build/
 
@@ -44,7 +46,7 @@ HEADERS  += src/mainwindow.h \
     src/subdivider.h \
     src/util.h
 
-FORMS    += src/mainwindow.ui
+FORMS += src/mainwindow.ui
 
 RESOURCES += \
     src/resources.qrc

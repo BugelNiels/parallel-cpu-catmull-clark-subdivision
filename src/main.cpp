@@ -107,7 +107,6 @@ int main(int argc, char* argv[]) {
               << "-c -t <num threads> -f <filename> -l <subdivision level>\n";
     exit(EXIT_FAILURE);
   }
-  QString filePath = "models/" + QString(filename) + ".obj";
-  commandlineSubdivision(filePath, atoi(subdivLevel));
+  commandlineSubdivision(QString(filename), atoi(subdivLevel));
   return 0;
 }

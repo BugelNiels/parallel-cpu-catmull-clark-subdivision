@@ -27,9 +27,9 @@ You need the following to be able to compile and run the project:
 
 To set up the program, run the following commands:
 ```sh
-cd src
-qmake CatmarkSubdiv.pro
+qmake CpuSubdivision.pro
 make
+cd build
 ```
 
 ### Running
@@ -45,13 +45,15 @@ To run the project without the GUI, you can use the following:
 ```
 This will run the commandline subdivision on `bigguy.obj`. It will subdivide the mesh `models/bigguy.obj` 6 times using 4 threads. For now, the framework does not save any results. The timings in milliseconds will be written to a file called timings.txt.
 
-Alternatively, it can be run using QtCreator by opening the SubdivCurves.pro file and pressing the run button (or pressing ctrl+r).
+Alternatively, it can be run using QtCreator by opening the `CpuSubdivision.pro` file and pressing the run button (or pressing ctrl+r).
 
 ## Usage
 
 The `Import OBJ file` button can be used to import .obj files. A number of example meshes are provided in the `models` directory.
 
 ![Object Loaded](screenshots/obj_loaded.png)
+
+Movement around the mesh is performed by pressing and dragging the mouse. Scrolling can be used for zooming in and out.
 
 A number of Catmull-Clark subdivision steps can be applied by changing the spinner. Note that it will reevaluate the entire mesh each time this spinner is changed. This is done so that the timings are accurate.
 
