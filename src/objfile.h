@@ -17,10 +17,11 @@ class OBJFile {
   QVector<QVector3D> vertexCoords;
   QVector<QVector2D> textureCoords;
   QVector<QVector3D> vertexNormals;
-  QVector<unsigned short> faceValences;
-  QVector<unsigned int> faceCoordInd;
-  QVector<unsigned int> faceTexInd;
-  QVector<unsigned int> faceNormalInd;
+  QVector<QVector<int>> faceCoordInd;
+  QVector<QVector<int>> faceTexInd;
+  QVector<QVector<int>> faceNormalInd;
+
+  bool isQuad;
 };
 
 #endif  // OBJFILE_H

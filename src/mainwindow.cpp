@@ -1,8 +1,13 @@
 #include "mainwindow.h"
 
+#include <QDebug>
+#include <QElapsedTimer>
+
+#include "meshinitializer.h"
+#include "quadmesh.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   qDebug() << "✓✓ MainWindow constructor";
   ui->setupUi(this);
@@ -18,11 +23,18 @@ MainWindow::~MainWindow() {
 void MainWindow::importOBJ(QString filename) {
   qDebug() << filename;
   OBJFile newModel = OBJFile(filename);
-  meshes.clear();
-  meshes.reserve(10);
-  meshes.append(Mesh(&newModel));
+  MeshInitializer initializer(&newModel);
+  subdivider = (initializer.constructHalfEdgeMesh());
 
-  meshIndex = 0;
+  Mesh* baseMesh = subdivider.getBaseMesh();
+  ui->h0LabelNum->setNum(baseMesh->getNumHalfEdges());
+  ui->f0LabelNum->setNum(baseMesh->getNumFaces());
+  ui->e0LabelNum->setNum(baseMesh->getNumEdges());
+  ui->v0LabelNum->setNum(baseMesh->getNumVerts());
+
+  subdivisionLevel = 0;
+  ui->SubdivSteps->setValue(0);
+
   updateBuffers();
   ui->MainDisplay->settings.modelLoaded = true;
   ui->generalGroupBox->setEnabled(true);
@@ -35,7 +47,7 @@ void MainWindow::on_ImportOBJ_clicked() {
 }
 
 void MainWindow::on_SubdivSteps_valueChanged(int value) {
-  meshIndex = value;
+  subdivisionLevel = value;
   if (ui->MainDisplay->settings.requireApply) {
     return;
   }
@@ -48,20 +60,30 @@ void MainWindow::on_wireframeCheckBox_toggled(bool checked) {
 }
 
 void MainWindow::subdivide() {
-  if (meshes.size() == 0) {
-    return;
+  double milsecs = subdivider.subdivide(subdivisionLevel);
+  Mesh* currentMesh;
+  if (subdivisionLevel == 0) {
+    currentMesh = subdivider.getBaseMesh();
+  } else {
+    currentMesh = subdivider.getCurrentMesh();
   }
-  for (unsigned short k = meshes.size(); k < meshIndex + 1; k++) {
-    meshes.append(Mesh());
-    meshes[k - 1].subdivideCatmullClark(meshes[k]);
-  }
+
+  ui->hdLabelNum->setNum(currentMesh->getNumHalfEdges());
+  ui->fdLabelNum->setNum(currentMesh->getNumFaces());
+  ui->edLabelNum->setNum(currentMesh->getNumEdges());
+  ui->vdLabelNum->setNum(currentMesh->getNumVerts());
+  ui->timeLabel->setNum(milsecs);
   ui->MainDisplay->settings.uniformUpdateRequired = true;
   updateBuffers();
   ui->MainDisplay->update();
 }
 
 void MainWindow::updateBuffers() {
-  ui->MainDisplay->updateBuffers(meshes[meshIndex]);
+  if (subdivisionLevel == 0) {
+    ui->MainDisplay->updateBuffers(*subdivider.getBaseMesh());
+  } else {
+    ui->MainDisplay->updateBuffers(*subdivider.getCurrentMesh());
+  }
 }
 
 void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }
@@ -69,4 +91,13 @@ void MainWindow::on_applySubdivisionButton_pressed() { subdivide(); }
 void MainWindow::on_requireApplyCheckBox_toggled(bool checked) {
   ui->MainDisplay->settings.requireApply = checked;
   ui->applySubdivisionButton->setEnabled(checked);
+  if (!checked) {
+    subdivide();
+  }
+}
+
+void MainWindow::on_showNormalsCheckBox_toggled(bool checked) {
+  ui->MainDisplay->settings.showNormals = checked;
+  ui->MainDisplay->settings.uniformUpdateRequired = true;
+  ui->MainDisplay->update();
 }

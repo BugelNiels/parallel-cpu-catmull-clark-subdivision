@@ -13,4 +13,5 @@ Settings::Settings() {
   fov = 120.0;
 
   requireApply = false;
+  showNormals = false;
 }

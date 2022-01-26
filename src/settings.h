@@ -24,6 +24,7 @@ class Settings {
   QMatrix3x3 normalMatrix;
 
   bool requireApply;
+  bool showNormals;
 };
 
 #endif  // SETTINGS_H

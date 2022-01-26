@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>shaders/default.frag</file>
         <file>shaders/default.vert</file>
+        <file>shaders/edgeRefinement.glsl</file>
     </qresource>
 </RCC>

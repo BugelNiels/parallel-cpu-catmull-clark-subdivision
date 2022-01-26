@@ -6,6 +6,7 @@
 
 #include "mesh.h"
 #include "objfile.h"
+#include "subdivider.h"
 
 namespace Ui {
 class MainWindow;
@@ -18,11 +19,9 @@ class MainWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit MainWindow(QWidget *parent = 0);
+  explicit MainWindow(QWidget* parent = nullptr);
   ~MainWindow();
 
-  QVector<Mesh> meshes;
-  QVector<Mesh> limitMeshes;
   void importOBJ(QString filename);
 
  private slots:
@@ -31,14 +30,15 @@ class MainWindow : public QMainWindow {
   void on_wireframeCheckBox_toggled(bool checked);
 
   void on_applySubdivisionButton_pressed();
-
   void on_requireApplyCheckBox_toggled(bool checked);
+  void on_showNormalsCheckBox_toggled(bool checked);
 
  private:
+  Subdivider subdivider = nullptr;
   void subdivide();
   void updateBuffers();
-  Ui::MainWindow *ui;
-  int meshIndex;
+  Ui::MainWindow* ui;
+  int subdivisionLevel;
 };
 
 #endif  // MAINWINDOW_H
