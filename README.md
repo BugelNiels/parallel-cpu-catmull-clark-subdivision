@@ -27,6 +27,7 @@ You need the following to be able to compile and run the project:
 
 To set up the program, run the following commands:
 ```sh
+git clone git@github.com:BugelNiels/parallel-cpu-catmull-clark-subdivision.git
 qmake CpuSubdivision.pro
 make
 cd build
@@ -43,7 +44,7 @@ To run the project without the GUI, you can use the following:
 ```sh
 ./cpuSubdivide -c -f "../models/bigguy.obj" -l 6 -t 4
 ```
-This will run the commandline subdivision on `bigguy.obj`. It will subdivide the mesh `models/bigguy.obj` 6 times using 4 threads. For now, the framework does not save any results. The timings in milliseconds will be written to a file called timings.txt.
+This will run the commandline subdivision on `bigguy.obj`. It will subdivide the mesh provided at the `-f` position: `models/bigguy.obj` 6 times (`-l`) using 4 threads (`-t`). For now, the framework does not save any results. The timings in milliseconds will be written to a file called timings.txt.
 
 Alternatively, it can be run using QtCreator by opening the `CpuSubdivision.pro` file and pressing the run button (or pressing ctrl+r).
 
