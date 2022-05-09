@@ -16,6 +16,8 @@ CONFIG += release
 release: DESTDIR = build/
 debug:   DESTDIR = build/
 
+INCLUDEPATH += src/
+
 OBJECTS_DIR = $$DESTDIR/.obj
 MOC_DIR = $$DESTDIR/.moc
 RCC_DIR = $$DESTDIR/.qrc
